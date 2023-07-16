@@ -47,7 +47,7 @@ git clone https://github.com/colizz/NanoTuples.git PhysicsTools/NanoTuples -b de
 ### Use an updated onnxruntime package (before compiling the code)
 
 ```bash
-./PhysicsTools/NanoTuples/scripts/install_onnxruntime.sh
+pushd $CMSSW_BASE; src/PhysicsTools/NanoTuples/scripts/install_onnxruntime.sh; popd
 ```
 
 ### Get the ParT model
