@@ -1,66 +1,50 @@
 import FWCore.ParameterSet.Config as cms
 from PhysicsTools.NanoAOD.common_cff import Var
-from PhysicsTools.NanoTuples.ak15_cff import setupAK15
-from PhysicsTools.NanoTuples.ak8_cff import addParticleNetAK8, getCustomTaggerDiscriminatorsAK8, addCustomTaggerAK8
-from PhysicsTools.NanoTuples.pfcands_cff import addPFCands
 
+def nanoTuples_customizeCommon(process, runOnMC):
+    from PhysicsTools.NanoTuples.jetTools import updateJetCollection as updateJetCollectionCustom
+    from PhysicsTools.NanoTuples.hwwTagger.pfMassDecorrelatedInclParticleTransformerV3_cff import _pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTagsProbs
+    _btagDiscriminators = _pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTagsProbs
 
-def nanoTuples_customizeVectexTable(process):
-    process.vertexTable.dlenMin = -1
-    process.vertexTable.dlenSigMin = -1
-    process.svCandidateTable.variables.ntracks = Var("numberOfDaughters()", int, doc="number of tracks")
-    return process
+    # run GloParT V03FullScore and add scores to btagging discriminators
+    # note: this custom updateJetCollection function trick is borrowed from here: https://github.com/colizz/DNNTuples/tree/dev-Run3-hww
+    updateJetCollectionCustom(
+       process,
+       jetSource = cms.InputTag('slimmedJetsAK8'),
+       pvSource = cms.InputTag('offlineSlimmedPrimaryVertices'),
+       svSource = cms.InputTag('slimmedSecondaryVertices'),
+       rParam = 0.8,
+       jetCorrections = ('AK8PFPuppi', cms.vstring(['L1FastJet', 'L2Relative', 'L3Absolute', 'L2L3Residual']), 'None'),
+       btagDiscriminators = _btagDiscriminators,
+       postfix='AK8WithDeepInfo',
+       printWarning = False
+    )
+    process.jetCorrFactorsAK8.src="selectedUpdatedPatJetsAK8WithDeepInfo"
+    process.updatedJetsAK8.jetSource="selectedUpdatedPatJetsAK8WithDeepInfo"
 
-
-def nanoTuples_customizeFatJetTable(process, runOnMC, addDeepAK8Probs=False):
-    if addDeepAK8Probs:
-        # add DeepAK8 raw scores: nominal
-        from RecoBTag.ONNXRuntime.pfDeepBoostedJet_cff import _pfDeepBoostedJetTagsProbs
-        for prob in _pfDeepBoostedJetTagsProbs:
-            name = prob.split(':')[1]
-            setattr(process.fatJetTable.variables, 'deepTag_' + name, Var("bDiscriminator('%s')" % prob, float, doc=prob, precision=-1))
-
-        # add DeepAK8 raw scores: mass decorrelated
-        from RecoBTag.ONNXRuntime.pfDeepBoostedJet_cff import _pfMassDecorrelatedDeepBoostedJetTagsProbs
-        for prob in _pfMassDecorrelatedDeepBoostedJetTagsProbs:
-            name = prob.split(':')[1]
-            setattr(process.fatJetTable.variables, 'deepTagMD_' + name, Var("bDiscriminator('%s')" % prob, float, doc=prob, precision=-1))
-
-    if runOnMC:
-        process.finalGenParticles.select.append('keep+ (abs(pdgId) == 6 || abs(pdgId) == 23 || abs(pdgId) == 24 || abs(pdgId) == 25)')
-
-    return process
-
-
-def nanoTuples_customizeCommon(process, runOnMC, addAK15=True, addAK8=False, addPFcands=False, customAK8Taggers=[], customAK15Taggers=[]):
-    pfcand_params = {'srcs': [], 'isPuppiJets':[], 'jetTables':[]}
-    if addAK15:
-        setupAK15(process, runOnMC=runOnMC, runParticleNet=False, runParticleNetMD=True, customAK15Taggers=customAK15Taggers)
-        pfcand_params['srcs'].append('ak15WithUserData')
-        pfcand_params['isPuppiJets'].append(True)
-        pfcand_params['jetTables'].append('ak15Table')
-    if addAK8:
-        addParticleNetAK8(process, runParticleNet=False, runParticleNetMD=True)
-        pfcand_params['srcs'].append('updatedJetsAK8WithUserData')
-        pfcand_params['isPuppiJets'].append(True)
-        pfcand_params['jetTables'].append('fatJetTable')
-    if len(customAK8Taggers) > 0:
-        tag_discs = sum([getCustomTaggerDiscriminatorsAK8(process, name) for name in customAK8Taggers], [])
-        addCustomTaggerAK8(process, tag_discs)
-        pfcand_params['srcs'].append('updatedJetsAK8WithUserData')
-        pfcand_params['isPuppiJets'].append(True)
-        pfcand_params['jetTables'].append('fatJetTable')
-    if addPFcands:
-        addPFCands(process, outTableName='PFCands', **pfcand_params)
-
-    # nanoTuples_customizeVectexTable(process)
-    # nanoTuples_customizeFatJetTable(process, runOnMC=runOnMC)
+    # add variables to NanoAOD branches
+    ## you may add more scores here. See score names in PhysicsTools/NanoTuples/python/hwwTagger/pfMassDecorrelatedInclParticleTransformerV3_cff.py
+    process.fatJetTable.variables.globalParT3_Xbb = Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:probRawHbb')", float, doc="Mass-decorrelated GlobalParT-3 H->bb score.", precision=10)
+    process.fatJetTable.variables.globalParT3_Xcc = Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:probRawHcc')", float, doc="Mass-decorrelated GlobalParT-3 H->cc score.", precision=10)
+    process.fatJetTable.variables.globalParT3_Xss = Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:probRawHss')", float, doc="Mass-decorrelated GlobalParT-3 H->ss score.", precision=10)
+    process.fatJetTable.variables.globalParT3_Xqq = Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:probRawHqq')", float, doc="Mass-decorrelated GlobalParT-3 H->qq score.", precision=10)
+    process.fatJetTable.variables.globalParT3_Xee = Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:probRawHee')", float, doc="Mass-decorrelated GlobalParT-3 H->ee score.", precision=10)
+    process.fatJetTable.variables.globalParT3_Xmm = Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:probRawHmm')", float, doc="Mass-decorrelated GlobalParT-3 H->mu mu score.", precision=10)
+    process.fatJetTable.variables.globalParT3_Xaa = Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:probRawHaa')", float, doc="Mass-decorrelated GlobalParT-3 H->gamma gamma score.", precision=10)
+    process.fatJetTable.variables.globalParT3_QCDb = Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:probRawQCDb')", float, doc="Mass-decorrelated GlobalParT-3 QCD-b score.", precision=10)
+    process.fatJetTable.variables.globalParT3_QCDbb = Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:probRawQCDbb')", float, doc="Mass-decorrelated GlobalParT-3 QCD-bb score.", precision=10)
+    process.fatJetTable.variables.globalParT3_QCDc = Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:probRawQCDc')", float, doc="Mass-decorrelated GlobalParT-3 QCD-c score.", precision=10)
+    process.fatJetTable.variables.globalParT3_QCDcc = Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:probRawQCDcc')", float, doc="Mass-decorrelated GlobalParT-3 QCD-cc score.", precision=10)
+    process.fatJetTable.variables.globalParT3_QCDothers = Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:probRawQCDothers')", float, doc="Mass-decorrelated GlobalParT-3 QCD-others score.", precision=10)
+    ## also add all dim-256 hidden neurons
+    for i in range(256):
+        setattr(process.fatJetTable.variables, 'globalParT3_hidNeuron%s' % str(i).zfill(3), Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:hidNeuron%s')" % str(i).zfill(3), float, doc="Mass-decorrelated GlobalParT-3 %d-th hidden-layer neuron." % i, precision=10))
 
     return process
 
 
 def nanoTuples_customizeData(process):
-    process = nanoTuples_customizeCommon(process, False, addAK15=False, addAK8=False, addPFcands=False, customAK8Taggers=['InclParticleTransformerV2'], customAK15Taggers=[])
+    process = nanoTuples_customizeCommon(process, False)
 
     process.NANOAODoutput.fakeNameForCrab = cms.untracked.bool(True)  # hack for crab publication
     process.add_(cms.Service("InitRootHandlers", EnableIMT=cms.untracked.bool(False)))
@@ -68,7 +52,7 @@ def nanoTuples_customizeData(process):
 
 
 def nanoTuples_customizeMC(process):
-    process = nanoTuples_customizeCommon(process, True, addAK15=False, addAK8=False, addPFcands=False, customAK8Taggers=['InclParticleTransformerV2'], customAK15Taggers=[])
+    process = nanoTuples_customizeCommon(process, True)
 
     process.NANOAODSIMoutput.fakeNameForCrab = cms.untracked.bool(True)  # hack for crab publication
     process.add_(cms.Service("InitRootHandlers", EnableIMT=cms.untracked.bool(False)))

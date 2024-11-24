@@ -2,6 +2,11 @@
 
 Custom NanoAOD ntuple producers with additional boosted jet taggers and their PF candidates.
 
+This branch provides a recipe to run the GloParT 3 model (official model, integrated since NanoAODv15) in early campaigns.
+It is validated to work for MiniAODv4 (Nano v13 campaigns).
+
+The code runs under CMSSW_14_0_11.
+
 <!-- TOC -->
 
 - [NanoTuples](#nanotuples)
@@ -19,12 +24,7 @@ Custom NanoAOD ntuple producers with additional boosted jet taggers and their PF
 
 ## Version
 
-The current version is based on [NanoAODv9](https://gitlab.cern.ch/cms-nanoAOD/nanoaod-doc/-/wikis/Releases/NanoAODv9).
-
-Customizations:
-
-- AK15 jets w/ ParticleNet-MD (V02d, EOY training)
-- [*not enabled by default*] PFCands of AK15 jets
+The current version is based on [NanoAODv13](https://gitlab.cern.ch/cms-nanoAOD/nanoaod-doc/-/wikis/Releases/NanoAODv13).
 
 ------
 
@@ -33,27 +33,21 @@ Customizations:
 ### Set up CMSSW
 
 ```bash
-cmsrel CMSSW_10_6_31
-cd CMSSW_10_6_31/src
+cmsrel CMSSW_14_0_11
+cd CMSSW_14_0_11/src
 cmsenv
 ```
 
 ### Get customized NanoAOD producers
 
 ```bash
-git clone https://github.com/colizz/NanoTuples.git PhysicsTools/NanoTuples -b dev-part-UL
-```
-
-### Use an updated onnxruntime package (before compiling the code)
-
-```bash
-./PhysicsTools/NanoTuples/scripts/install_onnxruntime.sh
+git clone https://github.com/colizz/NanoTuples.git PhysicsTools/NanoTuples -b dev-glopart3-nanov13
 ```
 
 ### Get the ParT model
 
 ```bash
-wget https://coli.web.cern.ch/coli/tmp/.230626-003937_partv2_model/ak15/V02/model.onnx -O $CMSSW_BASE/src/PhysicsTools/NanoTuples/data/InclParticleTransformer-MD/ak15/V02/model.onnx
+wget https://coli.web.cern.ch/coli/tmp/.230626-003937_partv2_model/ak8/V03FullScore/model_full_score.onnx -O $CMSSW_BASE/src/PhysicsTools/NanoTuples/data/InclParticleTransformer-MD/ak8/V03FullScore/model_full_score.onnx
 ```
 
 ### Compile
@@ -99,17 +93,18 @@ less +F test_data2017.log
 ``` 
 -->
 
+Test commands
 
-MC (UL18, MiniAODv2):
+MC (Summer23, MiniAODv4):
 
 ```bash
-cmsDriver.py --python_filename test_nanoTuples_mc2018.py --eventcontent NANOAODSIM --customise PhysicsTools/NanoTuples/nanoTuples_cff.nanoTuples_customizeMC --datatier NANOAODSIM --fileout file:nano_mc2018.root --conditions 106X_upgrade2018_realistic_v16_L1v1 --step NANO --filein /store/mc/RunIISummer20UL18MiniAODv2/WplusH_HToCC_WToLNu_M-125_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v1/2520000/A4FFC5A7-79DF-FE4B-A515-1F3EA0513509.root --era Run2_2018,run2_nanoAOD_106Xv2 --mc -n 50
+cmsDriver.py  --python_filename test_nanoTuples_mc2023.py --eventcontent NANOAODSIM --customise PhysicsTools/NanoTuples/nanoTuples_cff.nanoTuples_customizeMC --datatier NANOAODSIM --fileout file:nano_mc2023.root --conditions 133X_mcRun3_2023_realistic_ForNanov13_v1 --step NANO --scenario pp --filein /store/mc/Run3Summer23MiniAODv4/QCD_PT-800to1000_TuneCP5_13p6TeV_pythia8/MINIAODSIM/130X_mcRun3_2023_realistic_v14-v2/2530000/0884da68-b90c-4816-b1a2-50206b0aafd8.root --era Run3_2023 --mc -n 10
 ```
 
-Data (UL18, MiniAODv2):
+Data (Summer23, MiniAODv4):
 
 ```bash
-cmsDriver.py --python_filename test_nanoTuples_data2018.py --eventcontent NANOAOD --customise PhysicsTools/NanoTuples/nanoTuples_cff.nanoTuples_customizeData --datatier NANOAOD --fileout file:nano_data2018.root --conditions 106X_dataRun2_v37 --step NANO --filein /store/data/Run2018A/SingleMuon/MINIAOD/UL2018_MiniAODv2_GT36-v1/2820000/000EE25A-A8E8-1444-8A0B-0DBEBE5634FB.root --era Run2_2018,run2_nanoAOD_106Xv2 --data -n 50
+cmsDriver.py --python_filename test_nanoTuples_data2023.py --eventcontent NANOAOD --customise PhysicsTools/NanoTuples/nanoTuples_cff.nanoTuples_customizeData --datatier NANOAOD --fileout file:nano_data2018.root --conditions 133X_mcRun3_2023_realistic_ForNanov13_v1 --step NANO --scenario pp --filein /store/data/Run2023D/JetMET1/MINIAOD/19Dec2023-v1/2540000/00096b98-ff07-4064-9331-41db31aabdf8.root --era Run3_2023 --data -n 10
 ```
 
 <!--

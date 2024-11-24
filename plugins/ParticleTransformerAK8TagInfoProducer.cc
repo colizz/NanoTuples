@@ -44,6 +44,7 @@ private:
   void produce(edm::Event &, const edm::EventSetup &) override;
   void endStream() override {}
 
+  void fillJetFeatures(DeepBoostedJetFeatures &fts, const reco::Jet &jet);
   void fillParticleFeatures(DeepBoostedJetFeatures &fts, const reco::Jet &jet);
   void fillSVFeatures(DeepBoostedJetFeatures &fts, const reco::Jet &jet);
 
@@ -70,6 +71,7 @@ private:
   edm::EDGetTokenT<edm::ValueMap<float>> puppi_value_map_token_;
   edm::EDGetTokenT<edm::ValueMap<int>> pvasq_value_map_token_;
   edm::EDGetTokenT<edm::Association<VertexCollection>> pvas_token_;
+  edm::ESGetToken<TransientTrackBuilder, TransientTrackRecord> track_builder_token_;
 
   edm::Handle<VertexCollection> vtxs_;
   edm::Handle<SVCollection> svs_;
@@ -80,12 +82,19 @@ private:
   edm::Handle<edm::ValueMap<int>> pvasq_value_map_;
   edm::Handle<edm::Association<VertexCollection>> pvas_;
 
+  const static std::vector<std::string> jet_features_;
   const static std::vector<std::string> charged_particle_features_;
   const static std::vector<std::string> neutral_particle_features_;
   const static std::vector<std::string> sv_features_;
   const reco::Vertex *pv_ = nullptr;
 };
 
+const std::vector<std::string> ParticleTransformerAK8TagInfoProducer::jet_features_{
+    "jet_pt_log",
+    "jet_eta",
+    "jet_mass_log",
+    "jet_energy_log",
+};
 const std::vector<std::string> ParticleTransformerAK8TagInfoProducer::charged_particle_features_{
     "cpfcandlt_puppiw",        "cpfcandlt_hcalFrac",       "cpfcandlt_VTX_ass",      "cpfcandlt_lostInnerHits",
     "cpfcandlt_quality",       "cpfcandlt_charge",         "cpfcandlt_isEl",         "cpfcandlt_isMu",
@@ -137,7 +146,9 @@ ParticleTransformerAK8TagInfoProducer::ParticleTransformerAK8TagInfoProducer(con
       pfcand_token_(consumes<CandidateView>(iConfig.getParameter<edm::InputTag>("pf_candidates"))),
       lt_token_(consumes<CandidateView>(iConfig.getParameter<edm::InputTag>("lost_tracks"))),
       use_puppi_value_map_(false),
-      use_pvasq_value_map_(false) {
+      use_pvasq_value_map_(false),
+      track_builder_token_(
+          esConsumes<TransientTrackBuilder, TransientTrackRecord>(edm::ESInputTag("", "TransientTrackBuilder"))) {
   const auto &puppi_value_map_tag = iConfig.getParameter<edm::InputTag>("puppi_value_map");
   if (!puppi_value_map_tag.label().empty()) {
     puppi_value_map_token_ = consumes<edm::ValueMap<float>>(puppi_value_map_tag);
@@ -197,7 +208,7 @@ void ParticleTransformerAK8TagInfoProducer::produce(edm::Event &iEvent, const ed
   iEvent.getByToken(pfcand_token_, pfcands_);
   iEvent.getByToken(lt_token_, lts_);
 
-  iSetup.get<TransientTrackRecord>().get("TransientTrackBuilder", track_builder_);
+  track_builder_ = iSetup.getHandle(track_builder_token_);
 
   if (use_puppi_value_map_) {
     iEvent.getByToken(puppi_value_map_token_, puppi_value_map_);
@@ -215,6 +226,9 @@ void ParticleTransformerAK8TagInfoProducer::produce(edm::Event &iEvent, const ed
     // create jet features
     DeepBoostedJetFeatures features;
     // declare all the feature variables (init as empty vector)
+    for (const auto &name : jet_features_) {
+      features.add(name);
+    }
     for (const auto &name : charged_particle_features_) {
       features.add(name);
     }
@@ -234,6 +248,7 @@ void ParticleTransformerAK8TagInfoProducer::produce(edm::Event &iEvent, const ed
       fill_vars = false;
 
     if (fill_vars) {
+      fillJetFeatures(features, jet);
       fillParticleFeatures(features, jet);
       fillSVFeatures(features, jet);
 
@@ -247,6 +262,17 @@ void ParticleTransformerAK8TagInfoProducer::produce(edm::Event &iEvent, const ed
   }
 
   iEvent.put(std::move(output_tag_infos));
+}
+
+void ParticleTransformerAK8TagInfoProducer::fillJetFeatures(DeepBoostedJetFeatures &fts, const reco::Jet &jet) {
+  // reserve space
+  for (const auto &name : jet_features_) {
+    fts.reserve(name, 1);
+  }
+  fts.fill("jet_pt_log", std::log(jet.pt()));
+  fts.fill("jet_eta", jet.eta());
+  fts.fill("jet_mass_log", std::log(jet.mass()));
+  fts.fill("jet_energy_log", std::log(jet.energy()));
 }
 
 void ParticleTransformerAK8TagInfoProducer::fillParticleFeatures(DeepBoostedJetFeatures &fts, const reco::Jet &jet) {
@@ -267,7 +293,7 @@ void ParticleTransformerAK8TagInfoProducer::fillParticleFeatures(DeepBoostedJetF
 
   TrackInfoBuilder trkinfo(track_builder_);
 
-  std::map<reco::CandidatePtr::key_type, float> puppi_wgt_cache;
+  std::map<reco::CandidatePtr, float> puppi_wgt_cache;
   auto puppiWgt = [&](const reco::CandidatePtr &cand) {
     const auto *pack_cand = dynamic_cast<const pat::PackedCandidate *>(&(*cand));
     const auto *reco_cand = dynamic_cast<const reco::PFCandidate *>(&(*cand));
@@ -284,12 +310,12 @@ void ParticleTransformerAK8TagInfoProducer::fillParticleFeatures(DeepBoostedJetF
       throw edm::Exception(edm::errors::InvalidReference) << "Cannot convert to either pat::PackedCandidate or "
                                                              "reco::PFCandidate";
     }
-    puppi_wgt_cache[cand.key()] = wgt;
+    puppi_wgt_cache[cand] = wgt;
     return wgt;
   };
 
   std::vector<reco::CandidatePtr> cpfPtrs, npfPtrs;
-  std::map<reco::CandidatePtr::key_type, bool> isLostTrackMap;
+  std::map<reco::CandidatePtr, bool> isLostTrackMap;
 
   for (const auto &dau : jet.daughterPtrVector()) {
     // remove particles w/ extremely low puppi weights
@@ -309,7 +335,7 @@ void ParticleTransformerAK8TagInfoProducer::fillParticleFeatures(DeepBoostedJetF
     }
     if (cand->charge() != 0) {
       cpfPtrs.push_back(cand);
-      isLostTrackMap[cand.key()] = false;
+      isLostTrackMap[cand] = false;
     }else {
       npfPtrs.push_back(cand);
     }
@@ -319,8 +345,8 @@ void ParticleTransformerAK8TagInfoProducer::fillParticleFeatures(DeepBoostedJetF
     auto cand = lts_->ptrAt(i);
     if (reco::deltaR(*cand, jet) < jet_radius_) {
       cpfPtrs.push_back(cand);
-      isLostTrackMap[cand.key()] = true;
-      puppi_wgt_cache[cand.key()] = 1.; // set puppi weight to 1 for lost tracks
+      isLostTrackMap[cand] = true;
+      puppi_wgt_cache[cand] = 1.; // set puppi weight to 1 for lost tracks
     }
   }
 
@@ -346,12 +372,12 @@ void ParticleTransformerAK8TagInfoProducer::fillParticleFeatures(DeepBoostedJetF
       std::sort(cpfPtrs.begin(),
                 cpfPtrs.end(),
                 [&puppi_wgt_cache](const reco::CandidatePtr &a, const reco::CandidatePtr &b) {
-                  return puppi_wgt_cache.at(a.key()) * a->pt() > puppi_wgt_cache.at(b.key()) * b->pt();
+                  return puppi_wgt_cache.at(a) * a->pt() > puppi_wgt_cache.at(b) * b->pt();
                 });
       std::sort(npfPtrs.begin(),
                 npfPtrs.end(),
                 [&puppi_wgt_cache](const reco::CandidatePtr &a, const reco::CandidatePtr &b) {
-                  return puppi_wgt_cache.at(a.key()) * a->pt() > puppi_wgt_cache.at(b.key()) * b->pt();
+                  return puppi_wgt_cache.at(a) * a->pt() > puppi_wgt_cache.at(b) * b->pt();
                 });
     } else {
       // sort by original pt (not Puppi-weighted)
@@ -380,7 +406,7 @@ void ParticleTransformerAK8TagInfoProducer::fillParticleFeatures(DeepBoostedJetF
 
     const float ip_sign = flip_ip_sign_ ? -1 : 1;
 
-    auto candP4 = use_puppiP4_ ? puppi_wgt_cache.at(cand.key()) * cand->p4() : cand->p4();
+    auto candP4 = use_puppiP4_ ? puppi_wgt_cache.at(cand) * cand->p4() : cand->p4();
     if (packed_cand) {
       float hcal_fraction = 0.;
       if (packed_cand->pdgId() == 1 || packed_cand->pdgId() == 130) {
@@ -398,7 +424,7 @@ void ParticleTransformerAK8TagInfoProducer::fillParticleFeatures(DeepBoostedJetF
       fts.fill("cpfcandlt_isEl", std::abs(packed_cand->pdgId()) == 11);
       fts.fill("cpfcandlt_isMu", std::abs(packed_cand->pdgId()) == 13);
       fts.fill("cpfcandlt_isChargedHad", std::abs(packed_cand->pdgId()) == 211);
-      fts.fill("cpfcandlt_isLostTrack", isLostTrackMap[cand.key()]);
+      fts.fill("cpfcandlt_isLostTrack", isLostTrackMap[cand]);
 
       // impact parameters
       fts.fill("cpfcandlt_dz", ip_sign * packed_cand->dz());
@@ -427,7 +453,7 @@ void ParticleTransformerAK8TagInfoProducer::fillParticleFeatures(DeepBoostedJetF
       fts.fill("cpfcandlt_isEl", std::abs(reco_cand->pdgId()) == 11);
       fts.fill("cpfcandlt_isMu", std::abs(reco_cand->pdgId()) == 13);
       fts.fill("cpfcandlt_isChargedHad", std::abs(reco_cand->pdgId()) == 211);
-      fts.fill("cpfcandlt_isLostTrack", isLostTrackMap[cand.key()]);
+      fts.fill("cpfcandlt_isLostTrack", isLostTrackMap[cand]);
 
       // impact parameters
       const auto *trk = reco_cand->bestTrack();
@@ -445,7 +471,7 @@ void ParticleTransformerAK8TagInfoProducer::fillParticleFeatures(DeepBoostedJetF
     fts.fill("cpfcandlt_pz", candP4.pz());
     fts.fill("cpfcandlt_energy", candP4.energy());
 
-    fts.fill("cpfcandlt_puppiw", puppi_wgt_cache.at(cand.key()));
+    fts.fill("cpfcandlt_puppiw", puppi_wgt_cache.at(cand));
     fts.fill("cpfcandlt_phirel", reco::deltaPhi(candP4, jet));
     fts.fill("cpfcandlt_etarel", etasign * (candP4.eta() - jet.eta()));
     fts.fill("cpfcandlt_deltaR", reco::deltaR(candP4, jet));
@@ -556,7 +582,7 @@ void ParticleTransformerAK8TagInfoProducer::fillParticleFeatures(DeepBoostedJetF
         ((packed_cand && !packed_cand->hasTrackDetails()) || (reco_cand && !useTrackProperties(reco_cand))))
       continue;
 
-    auto candP4 = use_puppiP4_ ? puppi_wgt_cache.at(cand.key()) * cand->p4() : cand->p4();
+    auto candP4 = use_puppiP4_ ? puppi_wgt_cache.at(cand) * cand->p4() : cand->p4();
     if (packed_cand) {
       float hcal_fraction = 0.;
       if (packed_cand->pdgId() == 1 || packed_cand->pdgId() == 130) {
@@ -584,7 +610,7 @@ void ParticleTransformerAK8TagInfoProducer::fillParticleFeatures(DeepBoostedJetF
     fts.fill("npfcand_pz", candP4.pz());
     fts.fill("npfcand_energy", candP4.energy());
 
-    fts.fill("npfcand_puppiw", puppi_wgt_cache.at(cand.key()));
+    fts.fill("npfcand_puppiw", puppi_wgt_cache.at(cand));
     fts.fill("npfcand_phirel", reco::deltaPhi(candP4, jet));
     fts.fill("npfcand_etarel", etasign * (candP4.eta() - jet.eta()));
     fts.fill("npfcand_deltaR", reco::deltaR(candP4, jet));
@@ -626,7 +652,7 @@ void ParticleTransformerAK8TagInfoProducer::fillSVFeatures(DeepBoostedJetFeature
   for (const auto *sv : jetSVs) {
     // basic kinematics
     fts.fill("sv_mask", 1);
-
+  
     fts.fill("sv_px", sv->px());
     fts.fill("sv_py", sv->py());
     fts.fill("sv_pz", sv->pz());

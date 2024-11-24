@@ -6,6 +6,7 @@
   <use name="DataFormats/VertexReco"/>
   <use name="DataFormats/BTauReco"/>
   <use name="CommonTools/Utils"/>
+  <use name="CommonTools/UtilAlgos"/>
   <use name="RecoBTag/FeatureTools"/>
   <use name="TrackingTools/Records"/>
   <flags EDM_PLUGIN="1"/>
