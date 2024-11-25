@@ -104,7 +104,7 @@ cmsDriver.py  --python_filename test_nanoTuples_mc2023.py --eventcontent NANOAOD
 Data (Summer23, MiniAODv4):
 
 ```bash
-cmsDriver.py --python_filename test_nanoTuples_data2023.py --eventcontent NANOAOD --customise PhysicsTools/NanoTuples/nanoTuples_cff.nanoTuples_customizeData --datatier NANOAOD --fileout file:nano_data2018.root --conditions 133X_mcRun3_2023_realistic_ForNanov13_v1 --step NANO --scenario pp --filein /store/data/Run2023D/JetMET1/MINIAOD/19Dec2023-v1/2540000/00096b98-ff07-4064-9331-41db31aabdf8.root --era Run3_2023 --data -n 10
+cmsDriver.py --python_filename test_nanoTuples_data2023.py --eventcontent NANOAOD --customise PhysicsTools/NanoTuples/nanoTuples_cff.nanoTuples_customizeData --datatier NANOAOD --fileout file:nano_data2023.root --conditions 133X_mcRun3_2023_realistic_ForNanov13_v1 --step NANO --scenario pp --filein /store/data/Run2023D/JetMET1/MINIAOD/19Dec2023-v1/2540000/00096b98-ff07-4064-9331-41db31aabdf8.root --era Run3_2023 --data -n 10
 ```
 
 <!--
