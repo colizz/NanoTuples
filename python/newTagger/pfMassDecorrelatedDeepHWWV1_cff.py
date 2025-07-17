@@ -2,7 +2,7 @@ import FWCore.ParameterSet.Config as cms
 
 from RecoBTag.FeatureTools.pfDeepBoostedJetTagInfos_cfi import pfDeepBoostedJetTagInfos
 from RecoBTag.ONNXRuntime.boostedJetONNXJetTagsProducer_cfi import boostedJetONNXJetTagsProducer
-from PhysicsTools.NanoTuples.hwwTagger.pfMassDecorrelatedDeepHWWV1DiscriminatorsJetTags_cfi import pfMassDecorrelatedDeepHWWV1DiscriminatorsJetTags
+from PhysicsTools.NanoTuples.newTagger.pfMassDecorrelatedDeepHWWV1DiscriminatorsJetTags_cfi import pfMassDecorrelatedDeepHWWV1DiscriminatorsJetTags
 
 pfMassDecorrelatedDeepHWWV1TagInfos = pfDeepBoostedJetTagInfos.clone(
     use_puppiP4 = False

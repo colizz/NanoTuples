@@ -3,7 +3,7 @@ from PhysicsTools.NanoAOD.common_cff import Var
 
 def nanoTuples_customizeCommon(process, runOnMC):
     from PhysicsTools.NanoTuples.jetTools import updateJetCollection as updateJetCollectionCustom
-    from PhysicsTools.NanoTuples.hwwTagger.pfMassDecorrelatedInclParticleTransformerV3_cff import _pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTagsProbs
+    from PhysicsTools.NanoTuples.newTagger.pfMassDecorrelatedInclParticleTransformerV3_cff import _pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTagsProbs
     _btagDiscriminators = _pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTagsProbs
 
     # run GloParT V03FullScore and add scores to btagging discriminators
@@ -23,7 +23,7 @@ def nanoTuples_customizeCommon(process, runOnMC):
     process.updatedJetsAK8.jetSource="selectedUpdatedPatJetsAK8WithDeepInfo"
 
     # add variables to NanoAOD branches
-    ## you may add more scores here. See score names in PhysicsTools/NanoTuples/python/hwwTagger/pfMassDecorrelatedInclParticleTransformerV3_cff.py
+    ## you may add more scores here. See score names in PhysicsTools/NanoTuples/python/newTagger/pfMassDecorrelatedInclParticleTransformerV3_cff.py
     process.fatJetTable.variables.globalParT3_Xbb = Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:probRawHbb')", float, doc="Mass-decorrelated GlobalParT-3 H->bb score.", precision=10)
     process.fatJetTable.variables.globalParT3_Xcc = Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:probRawHcc')", float, doc="Mass-decorrelated GlobalParT-3 H->cc score.", precision=10)
     process.fatJetTable.variables.globalParT3_Xss = Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:probRawHss')", float, doc="Mass-decorrelated GlobalParT-3 H->ss score.", precision=10)
@@ -44,9 +44,9 @@ def nanoTuples_customizeCommon(process, runOnMC):
     process.fatJetTable.variables.globalParT3_massCorrQCDc = Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:massCorrRawQCDc')", float, doc="GlobalParT-3 mass regression corrector with respect to the original jet mass, optimised for QCD-c class", precision=10)
     process.fatJetTable.variables.globalParT3_massCorrQCDcc = Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:massCorrRawQCDcc')", float, doc="GlobalParT-3 mass regression corrector with respect to the original jet mass, optimised for QCD-cc class", precision=10)
     process.fatJetTable.variables.globalParT3_massCorrQCDothers = Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:massCorrRawQCDothers')", float, doc="GlobalParT-3 mass regression corrector with respect to the original jet mass, optimised for QCD-others class", precision=10)
-    ## also add all dim-256 hidden neurons
-    for i in range(256):
-        setattr(process.fatJetTable.variables, 'globalParT3_hidNeuron%s' % str(i).zfill(3), Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:hidNeuron%s')" % str(i).zfill(3), float, doc="Mass-decorrelated GlobalParT-3 %d-th hidden-layer neuron." % i, precision=10))
+    # ## also add all dim-256 hidden neurons
+    # for i in range(256):
+    #     setattr(process.fatJetTable.variables, 'globalParT3_hidNeuron%s' % str(i).zfill(3), Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:hidNeuron%s')" % str(i).zfill(3), float, doc="Mass-decorrelated GlobalParT-3 %d-th hidden-layer neuron." % i, precision=10))
 
     return process
 
