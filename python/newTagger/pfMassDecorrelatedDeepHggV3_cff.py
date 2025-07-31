@@ -1,11 +1,11 @@
 import FWCore.ParameterSet.Config as cms
 
 # use CustomDeepBoostedJetTagInfoProducer (to include recovered 4-vector)
-from RecoBTag.FeatureTools.pfDeepBoostedJetTagInfos_cfi import pfDeepBoostedJetTagInfos
+from PhysicsTools.NanoTuples.pfParticleTransformerAK8TagInfos_cfi import pfParticleTransformerAK8TagInfos as pfParticleTransformerV2JetTagInfos
 from RecoBTag.ONNXRuntime.boostedJetONNXJetTagsProducer_cfi import boostedJetONNXJetTagsProducer
 from PhysicsTools.NanoTuples.newTagger.pfMassDecorrelatedDeepHggV3DiscriminatorsJetTags_cfi import pfMassDecorrelatedDeepHggV3DiscriminatorsJetTags
 
-pfMassDecorrelatedDeepHggV3TagInfos = pfDeepBoostedJetTagInfos.clone(
+pfMassDecorrelatedDeepHggV3TagInfos = pfParticleTransformerV2JetTagInfos.clone(
     use_puppiP4 = False
 )
 
@@ -14,9 +14,9 @@ pfMassDecorrelatedDeepHggV3JetTags = boostedJetONNXJetTagsProducer.clone(
     preprocess_json = 'PhysicsTools/NanoTuples/data/DeepHgg-MD/ak8/V03/preprocess.json',
     model_path = 'PhysicsTools/NanoTuples/data/DeepHgg-MD/ak8/V03/model_full_score.onnx',
     flav_names = [
-        "label_Haa", 
-        "label_P", "label_NP", "label_PP", "label_PNP", "label_NPNP", 
-        "label_QCD_bb", "label_QCD_cc", "label_QCD_b", "label_QCD_c", "label_QCD_others" # 11 cls
+        "probHaa", 
+        "probP", "probNP", "probPP", "probPNP", "probNPNP", 
+        "probQCDbb", "probQCDcc", "probQCDb", "probQCDc", "probQCDothers" # 11 cls
     ], 
     debugMode = False,
 )
