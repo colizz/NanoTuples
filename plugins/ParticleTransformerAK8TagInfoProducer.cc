@@ -94,6 +94,9 @@ const std::vector<std::string> ParticleTransformerAK8TagInfoProducer::jet_featur
     "jet_eta",
     "jet_mass_log",
     "jet_energy_log",
+    "jet_pt_log_fake",
+    "jet_eta_fake",
+    "jet_mass_log_fake",
 };
 const std::vector<std::string> ParticleTransformerAK8TagInfoProducer::charged_particle_features_{
     "cpfcandlt_puppiw",        "cpfcandlt_hcalFrac",       "cpfcandlt_VTX_ass",      "cpfcandlt_lostInnerHits",
@@ -273,6 +276,9 @@ void ParticleTransformerAK8TagInfoProducer::fillJetFeatures(DeepBoostedJetFeatur
   fts.fill("jet_eta", jet.eta());
   fts.fill("jet_mass_log", std::log(jet.mass()));
   fts.fill("jet_energy_log", std::log(jet.energy()));
+  fts.fill("jet_pt_log_fake", 1.0f);
+  fts.fill("jet_eta_fake", 1.0f);
+  fts.fill("jet_mass_log_fake", 1.0f);
 }
 
 void ParticleTransformerAK8TagInfoProducer::fillParticleFeatures(DeepBoostedJetFeatures &fts, const reco::Jet &jet) {
