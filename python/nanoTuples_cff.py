@@ -4,7 +4,9 @@ from PhysicsTools.NanoAOD.common_cff import Var
 def nanoTuples_customizeCommon(process, runOnMC):
     from PhysicsTools.NanoTuples.jetTools import updateJetCollection as updateJetCollectionCustom
     from PhysicsTools.NanoTuples.newTagger.pfMassDecorrelatedInclParticleTransformerV3_cff import _pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTagsProbs
+    from PhysicsTools.NanoTuples.newTagger.pfMassDecorrelatedDeepHggV3_cff import _pfMassDecorrelatedDeepHggV3JetTagsProbs
     _btagDiscriminators = _pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTagsProbs
+    _btagDiscriminators = _pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTagsProbs + _pfMassDecorrelatedDeepHggV3JetTagsProbs
 
     # run GloParT V03FullScore and add scores to btagging discriminators
     # note: this custom updateJetCollection function trick is borrowed from here: https://github.com/colizz/DNNTuples/tree/dev-Run3-hww
@@ -37,18 +39,18 @@ def nanoTuples_customizeCommon(process, runOnMC):
     process.fatJetTable.variables.globalParT3_QCDcc = Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:probRawQCDcc')", float, doc="Mass-decorrelated GlobalParT-3 QCD-cc score.", precision=10)
     process.fatJetTable.variables.globalParT3_QCDothers = Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:probRawQCDothers')", float, doc="Mass-decorrelated GlobalParT-3 QCD-others score.", precision=10)
 
-     # new Hgg_tuned model
-    process.fatJetTable.variables.globalParT3_tuned_Hgg = Var("bDiscriminator('pfMassDecorrelatedDeepHggV3JetTags:label_Haa')", float, doc="Mass-decorrelated GlobalParT-3_tuned H->gamma gamma score.", precision=10)
-    process.fatJetTable.variables.globalParT3_tuned_P = Var("bDiscriminator('pfMassDecorrelatedDeepHggV3JetTags:label_P')", float, doc="Mass-decorrelated GlobalParT-3_tuned a prompt gamma + jet score.", precision=10)
-    process.fatJetTable.variables.globalParT3_tuned_NP = Var("bDiscriminator('pfMassDecorrelatedDeepHggV3JetTags:label_NP')", float, doc="Mass-decorrelated GlobalParT-3_tuned a non-prompt gamma + jet score.", precision=10)
-    process.fatJetTable.variables.globalParT3_tuned_PP = Var("bDiscriminator('pfMassDecorrelatedDeepHggV3JetTags:label_PP')", float, doc="Mass-decorrelated GlobalParT-3_tuned two prompt gamma score.", precision=10)
-    process.fatJetTable.variables.globalParT3_tuned_PNP = Var("bDiscriminator('pfMassDecorrelatedDeepHggV3JetTags:label_PNP')", float, doc="Mass-decorrelated GlobalParT-3_tuned a prompt gamma + a non-prompt gamma score.", precision=10)
-    process.fatJetTable.variables.globalParT3_tuned_NPNP = Var("bDiscriminator('pfMassDecorrelatedDeepHggV3JetTags:label_NPNP')", float, doc="Mass-decorrelated GlobalParT-3_tuned two non-prompt gamma score.", precision=10)
-    process.fatJetTable.variables.globalParT3_tuned_QCDb = Var("bDiscriminator('pfMassDecorrelatedDeepHggV3JetTags:label_QCD_b')", float, doc="Mass-decorrelated GlobalParT-3_tuned QCD-b score.", precision=10)
-    process.fatJetTable.variables.globalParT3_tuned_QCDbb = Var("bDiscriminator('pfMassDecorrelatedDeepHggV3JetTags:label_QCD_bb')", float, doc="Mass-decorrelated GlobalParT-3_tuned QCD-bb score.", precision=10)
-    process.fatJetTable.variables.globalParT3_tuned_QCDc = Var("bDiscriminator('pfMassDecorrelatedDeepHggV3JetTags:label_QCD_c')", float, doc="Mass-decorrelated GlobalParT-3_tuned QCD-c score.", precision=10)
-    process.fatJetTable.variables.globalParT3_tuned_QCDcc = Var("bDiscriminator('pfMassDecorrelatedDeepHggV3JetTags:label_QCD_cc')", float, doc="Mass-decorrelated GlobalParT-3_tuned QCD-cc score.", precision=10)
-    process.fatJetTable.variables.globalParT3_tuned_QCDothers = Var("bDiscriminator('pfMassDecorrelatedDeepHggV3JetTags:label_QCD_others')", float, doc="Mass-decorrelated GlobalParT-3_tuned QCD-others score.", precision=10)
+    # new model
+    process.fatJetTable.variables.globalParT3_tuned_Hgg = Var("bDiscriminator('pfMassDecorrelatedDeepHggV3JetTags:probHaa')", float, doc="Mass-decorrelated GlobalParT-3_tuned H->gamma gamma score.", precision=10)
+    process.fatJetTable.variables.globalParT3_tuned_P = Var("bDiscriminator('pfMassDecorrelatedDeepHggV3JetTags:probP')", float, doc="Mass-decorrelated GlobalParT-3_tuned a prompt gamma + jet score.", precision=10)
+    process.fatJetTable.variables.globalParT3_tuned_NP = Var("bDiscriminator('pfMassDecorrelatedDeepHggV3JetTags:probNP')", float, doc="Mass-decorrelated GlobalParT-3_tuned a non-prompt gamma + jet score.", precision=10)
+    process.fatJetTable.variables.globalParT3_tuned_PP = Var("bDiscriminator('pfMassDecorrelatedDeepHggV3JetTags:probPP')", float, doc="Mass-decorrelated GlobalParT-3_tuned two prompt gamma score.", precision=10)
+    process.fatJetTable.variables.globalParT3_tuned_PNP = Var("bDiscriminator('pfMassDecorrelatedDeepHggV3JetTags:probPNP')", float, doc="Mass-decorrelated GlobalParT-3_tuned a prompt gamma + a non-prompt gamma score.", precision=10)
+    process.fatJetTable.variables.globalParT3_tuned_NPNP = Var("bDiscriminator('pfMassDecorrelatedDeepHggV3JetTags:probNPNP')", float, doc="Mass-decorrelated GlobalParT-3_tuned two non-prompt gamma score.", precision=10)
+    process.fatJetTable.variables.globalParT3_tuned_QCDb = Var("bDiscriminator('pfMassDecorrelatedDeepHggV3JetTags:probQCDb')", float, doc="Mass-decorrelated GlobalParT-3_tuned QCD-b score.", precision=10)
+    process.fatJetTable.variables.globalParT3_tuned_QCDbb = Var("bDiscriminator('pfMassDecorrelatedDeepHggV3JetTags:probQCDbb')", float, doc="Mass-decorrelated GlobalParT-3_tuned QCD-bb score.", precision=10)
+    process.fatJetTable.variables.globalParT3_tuned_QCDc = Var("bDiscriminator('pfMassDecorrelatedDeepHggV3JetTags:probQCDc')", float, doc="Mass-decorrelated GlobalParT-3_tuned QCD-c score.", precision=10)
+    process.fatJetTable.variables.globalParT3_tuned_QCDcc = Var("bDiscriminator('pfMassDecorrelatedDeepHggV3JetTags:probQCDcc')", float, doc="Mass-decorrelated GlobalParT-3_tuned QCD-cc score.", precision=10)
+    process.fatJetTable.variables.globalParT3_tuned_QCDothers = Var("bDiscriminator('pfMassDecorrelatedDeepHggV3JetTags:probQCDothers')", float, doc="Mass-decorrelated GlobalParT-3_tuned QCD-others score.", precision=10)
     ## mass regression
     process.fatJetTable.variables.globalParT3_massCorrGeneric = Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:massCorrGeneric')", float, doc="GlobalParT-3 mass regression corrector with respect to the original jet mass, optimised for generic jet cases. Use (massCorrGeneric * mass * (1 - rawFactor)) to get the regressed mass", precision=10)
     process.fatJetTable.variables.globalParT3_massCorrXaa = Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:massCorrRawHaa')", float, doc="GlobalParT-3 mass regression corrector with respect to the original jet mass, optimised for H->aa class", precision=10)
