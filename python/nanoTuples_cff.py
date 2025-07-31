@@ -4,7 +4,7 @@ from PhysicsTools.NanoTuples.ak8_cff import addCustomTaggerAK8
 
 _default_cfg = {
     'addAK15': False,
-    'customAK8Taggers': ['GlobalParticleTransformerV3FullScore', 'GlobalParticleTransformerV3-Finetuned-DeepHgg'],
+    'customAK8Taggers': ['GlobalParticleTransformerV3FullScore'],
     'customAK15Taggers': [],
 
     'keepBranchMap': {

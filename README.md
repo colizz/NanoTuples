@@ -43,7 +43,7 @@ cmsenv
 ### Get customized NanoAOD producers
 
 ```bash
-git clone https://github.com/colizz/NanoTuples.git PhysicsTools/NanoTuples -b dev-custom-tagger-nanov15
+git clone https://github.com/colizz/NanoTuples.git PhysicsTools/NanoTuples -b release/nanov15
 ```
 
 ### Download the models
