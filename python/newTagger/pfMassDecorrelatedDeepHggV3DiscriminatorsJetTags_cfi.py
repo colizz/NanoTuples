@@ -6,30 +6,30 @@ pfMassDecorrelatedDeepHggV3DiscriminatorsJetTags = cms.EDProducer(
       cms.PSet(
          name = cms.string('probHggvsQCD'),
          numerator = cms.VInputTag(
-            cms.InputTag('pfMassDecorrelatedDeepHggV3JetTags', 'label_Haa'),
+            cms.InputTag('pfMassDecorrelatedDeepHggV3JetTags', 'probHaa'),
             ),
          denominator = cms.VInputTag(
-            cms.InputTag('pfMassDecorrelatedDeepHggV3JetTags', 'label_Haa'),
-            cms.InputTag('pfMassDecorrelatedDeepHggV3JetTags', 'label_QCD_bb'),
-            cms.InputTag('pfMassDecorrelatedDeepHggV3JetTags', 'label_QCD_cc'),
-            cms.InputTag('pfMassDecorrelatedDeepHggV3JetTags', 'label_QCD_b'),
-            cms.InputTag('pfMassDecorrelatedDeepHggV3JetTags', 'label_QCD_c'),
-            cms.InputTag('pfMassDecorrelatedDeepHggV3JetTags', 'label_QCD_others'),
+            cms.InputTag('pfMassDecorrelatedDeepHggV3JetTags', 'probHaa'),
+            cms.InputTag('pfMassDecorrelatedDeepHggV3JetTags', 'probQCDbb'),
+            cms.InputTag('pfMassDecorrelatedDeepHggV3JetTags', 'probQCDcc'),
+            cms.InputTag('pfMassDecorrelatedDeepHggV3JetTags', 'probQCDb'),
+            cms.InputTag('pfMassDecorrelatedDeepHggV3JetTags', 'probQCDc'),
+            cms.InputTag('pfMassDecorrelatedDeepHggV3JetTags', 'probQCD_others'),
             ),
          ),
       cms.PSet(
          name = cms.string('probHggvsgamQCD'),
          numerator = cms.VInputTag(
-            cms.InputTag('pfMassDecorrelatedDeepHggV3JetTags', 'label_Haa'),
+            cms.InputTag('pfMassDecorrelatedDeepHggV3JetTags', 'probHaa'),
 
             ),
          denominator = cms.VInputTag(
-            cms.InputTag('pfMassDecorrelatedDeepHggV3JetTags', 'label_Haa'),
-            cms.InputTag('pfMassDecorrelatedDeepHggV3JetTags', 'label_P'),
-            cms.InputTag('pfMassDecorrelatedDeepHggV3JetTags', 'label_NP'),
-            cms.InputTag('pfMassDecorrelatedDeepHggV3JetTags', 'label_PP'),
-            cms.InputTag('pfMassDecorrelatedDeepHggV3JetTags', 'label_PNP'),
-            cms.InputTag('pfMassDecorrelatedDeepHggV3JetTags', 'label_NPNP'),
+            cms.InputTag('pfMassDecorrelatedDeepHggV3JetTags', 'probHaa'),
+            cms.InputTag('pfMassDecorrelatedDeepHggV3JetTags', 'probP'),
+            cms.InputTag('pfMassDecorrelatedDeepHggV3JetTags', 'probNP'),
+            cms.InputTag('pfMassDecorrelatedDeepHggV3JetTags', 'probPP'),
+            cms.InputTag('pfMassDecorrelatedDeepHggV3JetTags', 'probPNP'),
+            cms.InputTag('pfMassDecorrelatedDeepHggV3JetTags', 'probNPNP'),
             ),
          ),
       )
