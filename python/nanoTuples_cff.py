@@ -1,82 +1,70 @@
 import FWCore.ParameterSet.Config as cms
-from PhysicsTools.NanoAOD.common_cff import Var
+from PhysicsTools.NanoTuples.ak15_cff import setupAK15
+from PhysicsTools.NanoTuples.ak8_cff import addCustomTaggerAK8
 
-def nanoTuples_customizeCommon(process, runOnMC):
-    from PhysicsTools.NanoTuples.jetTools import updateJetCollection as updateJetCollectionCustom
-    from PhysicsTools.NanoTuples.newTagger.pfMassDecorrelatedInclParticleTransformerV3_cff import _pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTagsProbs
-    from PhysicsTools.NanoTuples.newTagger.pfMassDecorrelatedDeepHggV3_cff import _pfMassDecorrelatedDeepHggV3JetTagsProbs
-    _btagDiscriminators = _pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTagsProbs
-    _btagDiscriminators = _pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTagsProbs + _pfMassDecorrelatedDeepHggV3JetTagsProbs
+_default_cfg = {
+    'addAK15': False,
+    'customAK8Taggers': ['GlobalParticleTransformerV3FullScore', 'GlobalParticleTransformerV3-Finetuned-DeepHgg'],
+    'customAK15Taggers': [],
 
-    # run GloParT V03FullScore and add scores to btagging discriminators
-    # note: this custom updateJetCollection function trick is borrowed from here: https://github.com/colizz/DNNTuples/tree/dev-Run3-hww
-    updateJetCollectionCustom(
-       process,
-       jetSource = cms.InputTag('slimmedJetsAK8'),
-       pvSource = cms.InputTag('offlineSlimmedPrimaryVertices'),
-       svSource = cms.InputTag('slimmedSecondaryVertices'),
-       rParam = 0.8,
-       jetCorrections = ('AK8PFPuppi', cms.vstring(['L1FastJet', 'L2Relative', 'L3Absolute', 'L2L3Residual']), 'None'),
-       btagDiscriminators = _btagDiscriminators,
-       postfix='AK8WithDeepInfo',
-       printWarning = False
-    )
-    process.jetCorrFactorsAK8.src="selectedUpdatedPatJetsAK8WithDeepInfo"
-    process.updatedJetsAK8.jetSource="selectedUpdatedPatJetsAK8WithDeepInfo"
+    'keepBranchMap': {
+        'GlobalParticleTransformerV2': [
+            # default branches to store for GloParT2
+            'probHbb', 'probHcc', 'probHss', 'probHqq', 'probHbc', 'probHbs', 'probHcs', 'probHgg', 'probHee', 'probHmm', 'probHtauhtaue', 'probHtauhtaum', 'probHtauhtauh', 
+            'probTopbWcs', 'probTopbWqq', 'probTopbWc', 'probTopbWs', 'probTopbWq', 'probTopbWev', 'probTopbWmv', 'probTopbWtauev', 'probTopbWtaumv', 'probTopbWtauhv', 'probTopWcs', 'probTopWqq', 'probTopWev', 'probTopWmv', 'probTopWtauev', 'probTopWtaumv', 'probTopWtauhv', 
+            'probQCDbb', 'probQCDcc', 'probQCDb', 'probQCDc', 'probQCDothers', 
+            'resonanceMassCorr', 'visiableMassCorr',
+        ],
+        'GlobalParticleTransformerV2-AK15': [
+            # default branches to store for GloParT2
+            'probHbb', 'probHcc', 'probHss', 'probHqq', 'probHbc', 'probHbs', 'probHcs', 'probHgg', 'probHee', 'probHmm', 'probHtauhtaue', 'probHtauhtaum', 'probHtauhtauh', 
+            'probTopbWcs', 'probTopbWqq', 'probTopbWc', 'probTopbWs', 'probTopbWq', 'probTopbWev', 'probTopbWmv', 'probTopbWtauev', 'probTopbWtaumv', 'probTopbWtauhv', 'probTopWcs', 'probTopWqq', 'probTopWev', 'probTopWmv', 'probTopWtauev', 'probTopWtaumv', 'probTopWtauhv', 
+            'probQCDbb', 'probQCDcc', 'probQCDb', 'probQCDc', 'probQCDothers', 
+            'resonanceMassCorr', 'visiableMassCorr',
+        ],
+        'GlobalParticleTransformerV3FullScore': [
+            # default nanoAOD branches have included GloParT3's standard discriminants
+            # modify the scores below to keep additional ones by inferring GloParT3's full-score model
+            'probRawHbb', 'probRawHcc', 'probRawHss', 'probRawHqq', 'probRawHee', 'probRawHmm', 'probRawHaa',
+            'massCorrRawHaa', 'massCorrRawQCDb', 'massCorrRawQCDbb', 'massCorrRawQCDc', 'massCorrRawQCDcc', 'massCorrRawQCDothers',
+        ],
 
-    # add variables to NanoAOD branches
-    ## you may add more scores here. See score names in PhysicsTools/NanoTuples/python/newTagger/pfMassDecorrelatedInclParticleTransformerV3_cff.py
-    process.fatJetTable.variables.globalParT3_Xbb = Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:probRawHbb')", float, doc="Mass-decorrelated GlobalParT-3 H->bb score.", precision=10)
-    process.fatJetTable.variables.globalParT3_Xcc = Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:probRawHcc')", float, doc="Mass-decorrelated GlobalParT-3 H->cc score.", precision=10)
-    process.fatJetTable.variables.globalParT3_Xss = Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:probRawHss')", float, doc="Mass-decorrelated GlobalParT-3 H->ss score.", precision=10)
-    process.fatJetTable.variables.globalParT3_Xqq = Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:probRawHqq')", float, doc="Mass-decorrelated GlobalParT-3 H->qq score.", precision=10)
-    process.fatJetTable.variables.globalParT3_Xee = Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:probRawHee')", float, doc="Mass-decorrelated GlobalParT-3 H->ee score.", precision=10)
-    process.fatJetTable.variables.globalParT3_Xmm = Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:probRawHmm')", float, doc="Mass-decorrelated GlobalParT-3 H->mu mu score.", precision=10)
-    process.fatJetTable.variables.globalParT3_Xaa = Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:probRawHaa')", float, doc="Mass-decorrelated GlobalParT-3 H->gamma gamma score.", precision=10)
-    process.fatJetTable.variables.globalParT3_QCDb = Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:probRawQCDb')", float, doc="Mass-decorrelated GlobalParT-3 QCD-b score.", precision=10)
-    process.fatJetTable.variables.globalParT3_QCDbb = Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:probRawQCDbb')", float, doc="Mass-decorrelated GlobalParT-3 QCD-bb score.", precision=10)
-    process.fatJetTable.variables.globalParT3_QCDc = Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:probRawQCDc')", float, doc="Mass-decorrelated GlobalParT-3 QCD-c score.", precision=10)
-    process.fatJetTable.variables.globalParT3_QCDcc = Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:probRawQCDcc')", float, doc="Mass-decorrelated GlobalParT-3 QCD-cc score.", precision=10)
-    process.fatJetTable.variables.globalParT3_QCDothers = Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:probRawQCDothers')", float, doc="Mass-decorrelated GlobalParT-3 QCD-others score.", precision=10)
+        # fine-tuned models
+        'GlobalParticleTransformerV3-Finetuned-DeepHgg': [
+            # GloParT fine-tuned for H->gamgam
+            'probHaa', 'probP', 'probNP', 'probPP', 'probPNP', 'probNPNP', 'probQCDb', 'probQCDbb', 'probQCDc', 'probQCDcc', 'probQCDothers',
+        ],
+    }
+}
 
-    # new model
-    process.fatJetTable.variables.globalParT3_tuned_Hgg = Var("bDiscriminator('pfMassDecorrelatedDeepHggV3JetTags:probHaa')", float, doc="Mass-decorrelated GlobalParT-3_tuned H->gamma gamma score.", precision=10)
-    process.fatJetTable.variables.globalParT3_tuned_P = Var("bDiscriminator('pfMassDecorrelatedDeepHggV3JetTags:probP')", float, doc="Mass-decorrelated GlobalParT-3_tuned a prompt gamma + jet score.", precision=10)
-    process.fatJetTable.variables.globalParT3_tuned_NP = Var("bDiscriminator('pfMassDecorrelatedDeepHggV3JetTags:probNP')", float, doc="Mass-decorrelated GlobalParT-3_tuned a non-prompt gamma + jet score.", precision=10)
-    process.fatJetTable.variables.globalParT3_tuned_PP = Var("bDiscriminator('pfMassDecorrelatedDeepHggV3JetTags:probPP')", float, doc="Mass-decorrelated GlobalParT-3_tuned two prompt gamma score.", precision=10)
-    process.fatJetTable.variables.globalParT3_tuned_PNP = Var("bDiscriminator('pfMassDecorrelatedDeepHggV3JetTags:probPNP')", float, doc="Mass-decorrelated GlobalParT-3_tuned a prompt gamma + a non-prompt gamma score.", precision=10)
-    process.fatJetTable.variables.globalParT3_tuned_NPNP = Var("bDiscriminator('pfMassDecorrelatedDeepHggV3JetTags:probNPNP')", float, doc="Mass-decorrelated GlobalParT-3_tuned two non-prompt gamma score.", precision=10)
-    process.fatJetTable.variables.globalParT3_tuned_QCDb = Var("bDiscriminator('pfMassDecorrelatedDeepHggV3JetTags:probQCDb')", float, doc="Mass-decorrelated GlobalParT-3_tuned QCD-b score.", precision=10)
-    process.fatJetTable.variables.globalParT3_tuned_QCDbb = Var("bDiscriminator('pfMassDecorrelatedDeepHggV3JetTags:probQCDbb')", float, doc="Mass-decorrelated GlobalParT-3_tuned QCD-bb score.", precision=10)
-    process.fatJetTable.variables.globalParT3_tuned_QCDc = Var("bDiscriminator('pfMassDecorrelatedDeepHggV3JetTags:probQCDc')", float, doc="Mass-decorrelated GlobalParT-3_tuned QCD-c score.", precision=10)
-    process.fatJetTable.variables.globalParT3_tuned_QCDcc = Var("bDiscriminator('pfMassDecorrelatedDeepHggV3JetTags:probQCDcc')", float, doc="Mass-decorrelated GlobalParT-3_tuned QCD-cc score.", precision=10)
-    process.fatJetTable.variables.globalParT3_tuned_QCDothers = Var("bDiscriminator('pfMassDecorrelatedDeepHggV3JetTags:probQCDothers')", float, doc="Mass-decorrelated GlobalParT-3_tuned QCD-others score.", precision=10)
-    ## mass regression
-    process.fatJetTable.variables.globalParT3_massCorrGeneric = Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:massCorrGeneric')", float, doc="GlobalParT-3 mass regression corrector with respect to the original jet mass, optimised for generic jet cases. Use (massCorrGeneric * mass * (1 - rawFactor)) to get the regressed mass", precision=10)
-    process.fatJetTable.variables.globalParT3_massCorrXaa = Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:massCorrRawHaa')", float, doc="GlobalParT-3 mass regression corrector with respect to the original jet mass, optimised for H->aa class", precision=10)
-    process.fatJetTable.variables.globalParT3_massCorrQCDb = Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:massCorrRawQCDb')", float, doc="GlobalParT-3 mass regression corrector with respect to the original jet mass, optimised for QCD-b class", precision=10)
-    process.fatJetTable.variables.globalParT3_massCorrQCDbb = Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:massCorrRawQCDbb')", float, doc="GlobalParT-3 mass regression corrector with respect to the original jet mass, optimised for QCD-bb class", precision=10)
-    process.fatJetTable.variables.globalParT3_massCorrQCDc = Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:massCorrRawQCDc')", float, doc="GlobalParT-3 mass regression corrector with respect to the original jet mass, optimised for QCD-c class", precision=10)
-    process.fatJetTable.variables.globalParT3_massCorrQCDcc = Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:massCorrRawQCDcc')", float, doc="GlobalParT-3 mass regression corrector with respect to the original jet mass, optimised for QCD-cc class", precision=10)
-    process.fatJetTable.variables.globalParT3_massCorrQCDothers = Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:massCorrRawQCDothers')", float, doc="GlobalParT-3 mass regression corrector with respect to the original jet mass, optimised for QCD-others class", precision=10)
-    # ## also add all dim-256 hidden neurons
-    # for i in range(256):
-    #     setattr(process.fatJetTable.variables, 'globalParT3_hidNeuron%s' % str(i).zfill(3), Var("bDiscriminator('pfMassDecorrelatedInclParticleTransformerV3HidLayerJetTags:hidNeuron%s')" % str(i).zfill(3), float, doc="Mass-decorrelated GlobalParT-3 %d-th hidden-layer neuron." % i, precision=10))
 
+def nanoTuples_customizeCommon(process, runOnMC,
+                               addAK15=_default_cfg['addAK15'],
+                               customAK8Taggers=_default_cfg['customAK8Taggers'],
+                               customAK15Taggers=_default_cfg['customAK15Taggers'],
+                               keepBranchMap=_default_cfg['keepBranchMap']):
+    '''Customize the NanoTuples to include additional taggers for AK8/AK15 jets
+       Options:
+         - customAK8Taggers: available taggers are (refer to ak8_cff.py):
+             ['DeepHWWV1', 'InclParticleTransformerV1', 'GlobalParticleTransformerV2', 'GlobalParticleTransformerV3FullScore']
+         - customAK15Taggers (for akAK15=True): available taggers are (refer to ak15_cff.py):
+             ['GlobalParticleTransformerV2-AK15']
+         - keepBranchMap: dictionary with {tagger_name: branch_list}; for specified tagger_name, only keep branches in branch_list 
+    '''
+
+    if len(customAK8Taggers) > 0:
+        addCustomTaggerAK8(process, customAK8Taggers=customAK8Taggers, keepBranchMap=keepBranchMap)
+    if addAK15:
+        setupAK15(process, runOnMC=runOnMC, customAK15Taggers=customAK15Taggers, keepBranchMap=keepBranchMap)
+    
     return process
 
 
 def nanoTuples_customizeData(process):
-    process = nanoTuples_customizeCommon(process, False)
-
-    process.NANOAODoutput.fakeNameForCrab = cms.untracked.bool(True)  # hack for crab publication
-    process.add_(cms.Service("InitRootHandlers", EnableIMT=cms.untracked.bool(False)))
+    process = nanoTuples_customizeCommon(process, runOnMC=False)
     return process
 
 
 def nanoTuples_customizeMC(process):
-    process = nanoTuples_customizeCommon(process, True)
-
-    process.NANOAODSIMoutput.fakeNameForCrab = cms.untracked.bool(True)  # hack for crab publication
-    process.add_(cms.Service("InitRootHandlers", EnableIMT=cms.untracked.bool(False)))
+    process = nanoTuples_customizeCommon(process, runOnMC=True)
     return process

@@ -13,8 +13,11 @@ The code is compatible with CMSSW_15_0_X.
     - [Setup](#setup)
         - [Set up CMSSW](#set-up-cmssw)
         - [Get customized NanoAOD producers](#get-customized-nanoaod-producers)
+        - [Download the models](#download-the-models)
         - [Compile](#compile)
         - [Test](#test)
+        - [Model configuration (optional)](#model-configuration-optional)
+        - [Adding new models (optional)](#adding-new-models-optional)
     - [Production](#production)
 
 <!-- /TOC -->
@@ -43,63 +46,30 @@ cmsenv
 git clone https://github.com/colizz/NanoTuples.git PhysicsTools/NanoTuples -b dev-custom-tagger-nanov15
 ```
 
-### Get the custom model
+### Download the models
 
-Example for the GloParTv3 full-score model:
 ```bash
-wget https://coli.web.cern.ch/coli/tmp/.230626-003937_partv2_model/ak8/V03FullScore/model_full_score.onnx -O $CMSSW_BASE/src/PhysicsTools/NanoTuples/data/InclParticleTransformer-MD/ak8/V03FullScore/model_full_score.onnx
+# Model paths to download
+models=(
+    "ak8/V01/model.onnx"                     # GloParT v1
+    "ak8/V02-HidLayer/model_embed.onnx"      # GloParT v2 (exposing hidden-layer)
+    "ak8/V03/model.onnx"                     # GloParT v3 (the cmssw version)
+    "ak8/V03FullScore/model_full_score.onnx" # GloParT v3 (the full-score version, w/ hidden layer)
+    "ak15/V02/model.onnx"                    # GloParT v2 for AK15 jets
+)
+
+for path in models; do
+  wget https://coli.web.cern.ch/coli/repo/NanoTuples_data/$path -O $CMSSW_BASE/src/PhysicsTools/NanoTuples/data/InclParticleTransformer-MD/$path --quiet --show-progress
+done
 ```
-
-### Update the model configs
-
-- Place the model directory (containing the ONNX and JSON files) in `data/`.  
-- Add the model's cff file in `python/newTagger/`, which defines the inference module:  
-  - Includes **"TagInfos"** (to acquire input variables for inference) and **"JetTags"** (the inference module).  
-- Integrate the **"TagInfos"** and **"JetTags"** modules for the new model into `python/newTagger/jetTools.py` and `python/newTagger/bTaggingCustomUtils.py`.  
-- Modify `python/newTagger/nanoTuples_cff.py` to enable the additional tagger inference using the **"updateJetCollection"** utility and specify the scores to store in NanoAOD.
 
 ### Compile
 
 ```bash
-scram b -j16
+scram b -j8
 ```
 
 ### Test
-
-<!-- 
-MC (UL16, MiniAODv1):
-
-```bash
-cmsDriver.py test_nanoTuples_mc2016 -n 1000 --mc --eventcontent NANOAODSIM --datatier NANOAODSIM --conditions 106X_mcRun2_asymptotic_v15 --step NANO --nThreads 1 --era Run2_2016,run2_nanoAOD_106Xv1 --customise PhysicsTools/NanoTuples/nanoTuples_cff.nanoTuples_customizeMC --filein /store/mc/RunIISummer16MiniAODv3/TTToSemilepton_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/80000/FEC61D42-F5F5-E811-8435-001E67A4061D.root --fileout file:nano_mc2016.root --customise_commands "process.options.wantSummary = cms.untracked.bool(True)" >& test_mc2016.log &
-
-less +F test_mc2016.log
-```
-
-Data (UL16, MiniAODv1):
-
-```bash
-cmsDriver.py test_nanoTuples_data2016 -n 1000 --data --eventcontent NANOAOD --datatier NANOAOD --conditions 106X_dataRun2_v32 --step NANO --nThreads 1 --era Run2_2016,run2_nanoAOD_106Xv1 --customise PhysicsTools/NanoTuples/nanoTuples_cff.nanoTuples_customizeData --filein /store/data/Run2016H/MET/MINIAOD/17Jul2018-v2/00000/0A0B71F7-75B8-E811-BAB7-0425C5DE7BE4.root --fileout file:nano_data2016.root --customise_commands "process.options.wantSummary = cms.untracked.bool(True)" >& test_data2016.log &
-
-less +F test_data2016.log
-```
-
-
-MC (UL17, MiniAODv1):
-
-```bash
-cmsDriver.py test_nanoTuples_mc2017 -n 1000 --mc --eventcontent NANOAODSIM --datatier NANOAODSIM --conditions 106X_mc2017_realistic_v8 --step NANO --nThreads 1 --era Run2_2017,run2_nanoAOD_106Xv1 --customise PhysicsTools/NanoTuples/nanoTuples_cff.nanoTuples_customizeMC --filein /store/mc/RunIIFall17MiniAODv2/DY1JetsToLL_M-50_LHEZpT_150-250_TuneCP5_13TeV-amcnloFXFX-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/60000/F492A0D0-3F56-E811-9387-FA163EB32A35.root --fileout file:nano_mc2017.root --customise_commands "process.options.wantSummary = cms.untracked.bool(True)" >& test_mc2017.log &
-
-less +F test_mc2017.log
-```
-
-Data (UL17, MiniAODv1):
-
-```bash
-cmsDriver.py test_nanoTuples_data2017 -n 1000 --data --eventcontent NANOAOD --datatier NANOAOD --conditions 106X_dataRun2_v32 --step NANO --nThreads 1 --era Run2_2017,run2_nanoAOD_106Xv1 --customise PhysicsTools/NanoTuples/nanoTuples_cff.nanoTuples_customizeData --filein /store/data/Run2017F/SingleElectron/MINIAOD/31Mar2018-v1/90002/EC099452-C938-E811-9922-0CC47A7C354C.root --fileout file:nano_data2017.root --customise_commands "process.options.wantSummary = cms.untracked.bool(True)" >& test_data2017.log &
-
-less +F test_data2017.log
-``` 
--->
 
 Test commands
 
@@ -114,6 +84,22 @@ Data (Summer24, MiniAODv6):
 ```bash
 cmsDriver.py --python_filename test_nanoTuples_data2024.py --eventcontent NANOAOD --customise PhysicsTools/NanoTuples/nanoTuples_cff.nanoTuples_customizeData --datatier NANOAOD --fileout file:nano_data2024.root --conditions 150X_dataRun3_v2 --step NANO --scenario pp --filein /store/data/Run2024C/JetMET1/MINIAOD/MINIv6NANOv15-v1/2530000/f91e593e-2d71-4e88-91cb-116eb66cb80d.root --era Run3_2024 --data -n 10
 ```
+
+### Model configuration (optional)
+
+To configure which models are run and which outputs are saved in NanoAOD, edit `python/nanoTuples_cff.py`:
+- Add new models to the `customAK8Taggers` and (if `addAK15=True`) `customAK15Taggers` lists.
+- Use `keepBranchMap` to specify which model output scores should be stored in the NanoAOD files.
+
+### Adding new models (optional)
+
+- Place your model directory (containing the ONNX and JSON files) under `data/`. The directory should include:
+  - The model file in `.onnx` format.
+  - A pre-processing JSON file, which is required by CMSSW's `boostedJetONNXJetTagsProducer` module to correctly run the model inference.
+- Add the model's cff file in `python/newTagger/`, which defines the inference module:  
+  - Includes **"TagInfos"** (to acquire input variables for inference) and **"JetTags"** (the inference module).  
+- Integrate the **"TagInfos"** and **"JetTags"** modules for the new model into `python/newTagger/jetTools.py` and `python/newTagger/bTaggingCustomUtils.py`.  
+- Modify `python/nanoTuples_cff.py` to enable the additional tagger inference using the **"updateJetCollection"** utility and specify the scores to store in NanoAOD.
 
 <!--
 ------
