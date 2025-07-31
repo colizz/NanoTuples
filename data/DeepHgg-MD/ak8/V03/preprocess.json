@@ -1,16 +1,16 @@
 {
   "output_names": [
-    "label_Haa",
-    "label_P",
-    "label_NP",
-    "label_PP",
-    "label_PNP",
-    "label_NPNP",
-    "label_QCD_bb",
-    "label_QCD_cc",
-    "label_QCD_b",
-    "label_QCD_c",
-    "label_QCD_others"
+    "probHaa",
+    "probP",
+    "probNP",
+    "probPP",
+    "probPNP",
+    "probNPNP",
+    "probQCDbb",
+    "probQCDcc",
+    "probQCDb",
+    "probQCDc",
+    "probQCDothers"
   ],
   "input_names": [
     "cpf_features",
@@ -22,44 +22,43 @@
     "sv_features",
     "sv_vectors",
     "sv_mask",
-    "jet_features",
-    "auxiliary_branches"
+    "jet_features"
   ],
   "cpf_features": {
     "var_names": [
-      "cpfcandlt_pt_log_nopuppi_sort",
-      "cpfcandlt_e_log_nopuppi_sort",
-      "cpfcandlt_etarel_sort",
-      "cpfcandlt_phirel_sort",
-      "cpfcandlt_abseta_sort",
-      "cpfcandlt_charge_sort",
-      "cpfcandlt_isEl_sort",
-      "cpfcandlt_isMu_sort",
-      "cpfcandlt_isChargedHad_sort",
-      "cpfcandlt_isLostTrack_sort",
-      "cpfcandlt_VTX_ass_sort",
-      "cpfcandlt_lostInnerHits_sort",
-      "cpfcandlt_normchi2_sort",
-      "cpfcandlt_quality_sort",
-      "cpfcandlt_dz_sort",
-      "cpfcandlt_dzsig_sort",
-      "cpfcandlt_dxy_sort",
-      "cpfcandlt_dxysig_sort",
-      "cpfcandlt_btagEtaRel_sort",
-      "cpfcandlt_btagPtRatio_sort",
-      "cpfcandlt_btagPParRatio_sort",
-      "cpfcandlt_btagSip3dVal_sort",
-      "cpfcandlt_btagSip3dSig_sort",
-      "cpfcandlt_btagJetDistVal_sort",
-      "cpfcandlt_pixelBarrelLayersWithMeasurement_sort",
-      "cpfcandlt_pixelEndcapLayersWithMeasurement_sort",
-      "cpfcandlt_stripTECLayersWithMeasurement_sort",
-      "cpfcandlt_stripTIBLayersWithMeasurement_sort",
-      "cpfcandlt_stripTIDLayersWithMeasurement_sort",
-      "cpfcandlt_stripTOBLayersWithMeasurement_sort"
+      "cpfcandlt_pt_log_nopuppi",
+      "cpfcandlt_e_log_nopuppi",
+      "cpfcandlt_etarel",
+      "cpfcandlt_phirel",
+      "cpfcandlt_abseta",
+      "cpfcandlt_charge",
+      "cpfcandlt_isEl",
+      "cpfcandlt_isMu",
+      "cpfcandlt_isChargedHad",
+      "cpfcandlt_isLostTrack",
+      "cpfcandlt_VTX_ass",
+      "cpfcandlt_lostInnerHits",
+      "cpfcandlt_normchi2",
+      "cpfcandlt_quality",
+      "cpfcandlt_dz",
+      "cpfcandlt_dzsig",
+      "cpfcandlt_dxy",
+      "cpfcandlt_dxysig",
+      "cpfcandlt_btagEtaRel",
+      "cpfcandlt_btagPtRatio",
+      "cpfcandlt_btagPParRatio",
+      "cpfcandlt_btagSip3dVal",
+      "cpfcandlt_btagSip3dSig",
+      "cpfcandlt_btagJetDistVal",
+      "cpfcandlt_pixelBarrelLayersWithMeasurement",
+      "cpfcandlt_pixelEndcapLayersWithMeasurement",
+      "cpfcandlt_stripTECLayersWithMeasurement",
+      "cpfcandlt_stripTIBLayersWithMeasurement",
+      "cpfcandlt_stripTIDLayersWithMeasurement",
+      "cpfcandlt_stripTOBLayersWithMeasurement"
     ],
     "var_infos": {
-      "cpfcandlt_pt_log_nopuppi_sort": {
+      "cpfcandlt_pt_log_nopuppi": {
         "median": 1,
         "norm_factor": 0.5,
         "replace_inf_value": 0,
@@ -67,7 +66,7 @@
         "upper_bound": 5,
         "pad": 0
       },
-      "cpfcandlt_e_log_nopuppi_sort": {
+      "cpfcandlt_e_log_nopuppi": {
         "median": 1.3,
         "norm_factor": 0.5,
         "replace_inf_value": 0,
@@ -75,7 +74,7 @@
         "upper_bound": 5,
         "pad": 0
       },
-      "cpfcandlt_etarel_sort": {
+      "cpfcandlt_etarel": {
         "median": 0,
         "norm_factor": 1,
         "replace_inf_value": 0,
@@ -83,7 +82,7 @@
         "upper_bound": 1e+32,
         "pad": 0
       },
-      "cpfcandlt_phirel_sort": {
+      "cpfcandlt_phirel": {
         "median": 0,
         "norm_factor": 1,
         "replace_inf_value": 0,
@@ -91,7 +90,7 @@
         "upper_bound": 1e+32,
         "pad": 0
       },
-      "cpfcandlt_abseta_sort": {
+      "cpfcandlt_abseta": {
         "median": 0.6,
         "norm_factor": 1.6,
         "replace_inf_value": 0,
@@ -99,7 +98,7 @@
         "upper_bound": 5,
         "pad": 0
       },
-      "cpfcandlt_charge_sort": {
+      "cpfcandlt_charge": {
         "median": 0,
         "norm_factor": 1,
         "replace_inf_value": 0,
@@ -107,7 +106,7 @@
         "upper_bound": 1e+32,
         "pad": 0
       },
-      "cpfcandlt_isEl_sort": {
+      "cpfcandlt_isEl": {
         "median": 0,
         "norm_factor": 1,
         "replace_inf_value": 0,
@@ -115,7 +114,7 @@
         "upper_bound": 1e+32,
         "pad": 0
       },
-      "cpfcandlt_isMu_sort": {
+      "cpfcandlt_isMu": {
         "median": 0,
         "norm_factor": 1,
         "replace_inf_value": 0,
@@ -123,7 +122,7 @@
         "upper_bound": 1e+32,
         "pad": 0
       },
-      "cpfcandlt_isChargedHad_sort": {
+      "cpfcandlt_isChargedHad": {
         "median": 0,
         "norm_factor": 1,
         "replace_inf_value": 0,
@@ -131,7 +130,7 @@
         "upper_bound": 1e+32,
         "pad": 0
       },
-      "cpfcandlt_isLostTrack_sort": {
+      "cpfcandlt_isLostTrack": {
         "median": 0,
         "norm_factor": 1,
         "replace_inf_value": 0,
@@ -139,7 +138,7 @@
         "upper_bound": 1e+32,
         "pad": 0
       },
-      "cpfcandlt_VTX_ass_sort": {
+      "cpfcandlt_VTX_ass": {
         "median": 4,
         "norm_factor": 0.3,
         "replace_inf_value": 0,
@@ -147,7 +146,7 @@
         "upper_bound": 5,
         "pad": 0
       },
-      "cpfcandlt_lostInnerHits_sort": {
+      "cpfcandlt_lostInnerHits": {
         "median": 0,
         "norm_factor": 1,
         "replace_inf_value": 0,
@@ -155,7 +154,7 @@
         "upper_bound": 1e+32,
         "pad": 0
       },
-      "cpfcandlt_normchi2_sort": {
+      "cpfcandlt_normchi2": {
         "median": 5,
         "norm_factor": 0.2,
         "replace_inf_value": 0,
@@ -163,7 +162,7 @@
         "upper_bound": 5,
         "pad": 0
       },
-      "cpfcandlt_quality_sort": {
+      "cpfcandlt_quality": {
         "median": 0,
         "norm_factor": 0.2,
         "replace_inf_value": 0,
@@ -171,7 +170,7 @@
         "upper_bound": 5,
         "pad": 0
       },
-      "cpfcandlt_dz_sort": {
+      "cpfcandlt_dz": {
         "median": 0,
         "norm_factor": 180,
         "replace_inf_value": 0,
@@ -179,7 +178,7 @@
         "upper_bound": 5,
         "pad": 0
       },
-      "cpfcandlt_dzsig_sort": {
+      "cpfcandlt_dzsig": {
         "median": 0,
         "norm_factor": 0.9,
         "replace_inf_value": 0,
@@ -187,7 +186,7 @@
         "upper_bound": 5,
         "pad": 0
       },
-      "cpfcandlt_dxy_sort": {
+      "cpfcandlt_dxy": {
         "median": 0.0,
         "norm_factor": 300,
         "replace_inf_value": 0,
@@ -195,7 +194,7 @@
         "upper_bound": 5,
         "pad": 0
       },
-      "cpfcandlt_dxysig_sort": {
+      "cpfcandlt_dxysig": {
         "median": 0,
         "norm_factor": 1.0,
         "replace_inf_value": 0,
@@ -203,7 +202,7 @@
         "upper_bound": 5,
         "pad": 0
       },
-      "cpfcandlt_btagEtaRel_sort": {
+      "cpfcandlt_btagEtaRel": {
         "median": 1.5,
         "norm_factor": 0.5,
         "replace_inf_value": 0,
@@ -211,7 +210,7 @@
         "upper_bound": 5,
         "pad": 0
       },
-      "cpfcandlt_btagPtRatio_sort": {
+      "cpfcandlt_btagPtRatio": {
         "median": 0,
         "norm_factor": 1,
         "replace_inf_value": 0,
@@ -219,7 +218,7 @@
         "upper_bound": 5,
         "pad": 0
       },
-      "cpfcandlt_btagPParRatio_sort": {
+      "cpfcandlt_btagPParRatio": {
         "median": 0,
         "norm_factor": 1,
         "replace_inf_value": 0,
@@ -227,7 +226,7 @@
         "upper_bound": 5,
         "pad": 0
       },
-      "cpfcandlt_btagSip3dVal_sort": {
+      "cpfcandlt_btagSip3dVal": {
         "median": 0,
         "norm_factor": 100,
         "replace_inf_value": 0,
@@ -235,7 +234,7 @@
         "upper_bound": 5,
         "pad": 0
       },
-      "cpfcandlt_btagSip3dSig_sort": {
+      "cpfcandlt_btagSip3dSig": {
         "median": 0,
         "norm_factor": 0.5,
         "replace_inf_value": 0,
@@ -243,7 +242,7 @@
         "upper_bound": 5,
         "pad": 0
       },
-      "cpfcandlt_btagJetDistVal_sort": {
+      "cpfcandlt_btagJetDistVal": {
         "median": 0,
         "norm_factor": 40,
         "replace_inf_value": 0,
@@ -251,7 +250,7 @@
         "upper_bound": 5,
         "pad": 0
       },
-      "cpfcandlt_pixelBarrelLayersWithMeasurement_sort": {
+      "cpfcandlt_pixelBarrelLayersWithMeasurement": {
         "median": 0,
         "norm_factor": 0.1,
         "replace_inf_value": 0,
@@ -259,7 +258,7 @@
         "upper_bound": 5,
         "pad": 0
       },
-      "cpfcandlt_pixelEndcapLayersWithMeasurement_sort": {
+      "cpfcandlt_pixelEndcapLayersWithMeasurement": {
         "median": 0,
         "norm_factor": 0.1,
         "replace_inf_value": 0,
@@ -267,7 +266,7 @@
         "upper_bound": 5,
         "pad": 0
       },
-      "cpfcandlt_stripTECLayersWithMeasurement_sort": {
+      "cpfcandlt_stripTECLayersWithMeasurement": {
         "median": 0,
         "norm_factor": 0.1,
         "replace_inf_value": 0,
@@ -275,7 +274,7 @@
         "upper_bound": 5,
         "pad": 0
       },
-      "cpfcandlt_stripTIBLayersWithMeasurement_sort": {
+      "cpfcandlt_stripTIBLayersWithMeasurement": {
         "median": 0,
         "norm_factor": 0.1,
         "replace_inf_value": 0,
@@ -283,7 +282,7 @@
         "upper_bound": 5,
         "pad": 0
       },
-      "cpfcandlt_stripTIDLayersWithMeasurement_sort": {
+      "cpfcandlt_stripTIDLayersWithMeasurement": {
         "median": 0,
         "norm_factor": 0.1,
         "replace_inf_value": 0,
@@ -291,7 +290,7 @@
         "upper_bound": 5,
         "pad": 0
       },
-      "cpfcandlt_stripTOBLayersWithMeasurement_sort": {
+      "cpfcandlt_stripTOBLayersWithMeasurement": {
         "median": 0,
         "norm_factor": 0.1,
         "replace_inf_value": 0,
@@ -305,13 +304,13 @@
   },
   "cpf_vectors": {
     "var_names": [
-      "cpfcandlt_px_sort",
-      "cpfcandlt_py_sort",
-      "cpfcandlt_pz_sort",
-      "cpfcandlt_energy_sort"
+      "cpfcandlt_px",
+      "cpfcandlt_py",
+      "cpfcandlt_pz",
+      "cpfcandlt_energy"
     ],
     "var_infos": {
-      "cpfcandlt_px_sort": {
+      "cpfcandlt_px": {
         "median": 0,
         "norm_factor": 1,
         "replace_inf_value": 0,
@@ -319,7 +318,7 @@
         "upper_bound": 1e+32,
         "pad": 0
       },
-      "cpfcandlt_py_sort": {
+      "cpfcandlt_py": {
         "median": 0,
         "norm_factor": 1,
         "replace_inf_value": 0,
@@ -327,7 +326,7 @@
         "upper_bound": 1e+32,
         "pad": 0
       },
-      "cpfcandlt_pz_sort": {
+      "cpfcandlt_pz": {
         "median": 0,
         "norm_factor": 1,
         "replace_inf_value": 0,
@@ -335,7 +334,7 @@
         "upper_bound": 1e+32,
         "pad": 0
       },
-      "cpfcandlt_energy_sort": {
+      "cpfcandlt_energy": {
         "median": 0,
         "norm_factor": 1,
         "replace_inf_value": 0,
@@ -666,12 +665,12 @@
   },
   "jet_features": {
     "var_names": [
-      "fj_pt_log",
-      "fj_mass_log",
-      "fj_eta_fake"
+      "jet_pt_log_fake",
+      "jet_mass_log_fake",
+      "jet_eta_fake"
     ],
     "var_infos": {
-      "fj_pt_log": {
+      "jet_pt_log_fake": {
         "median": 7.0,
         "norm_factor": 2.0,
         "replace_inf_value": 0,
@@ -679,7 +678,7 @@
         "upper_bound": 5,
         "pad": 0
       },
-      "fj_mass_log": {
+      "jet_mass_log_fake": {
         "median": 5.0,
         "norm_factor": 0.8,
         "replace_inf_value": 0,
@@ -687,24 +686,7 @@
         "upper_bound": 5,
         "pad": 0
       },
-      "fj_eta_fake": {
-        "median": 0,
-        "norm_factor": 1,
-        "replace_inf_value": 0,
-        "lower_bound": -1e+32,
-        "upper_bound": 1e+32,
-        "pad": 0
-      }
-    },
-    "max_length": 1,
-    "min_length": 1
-  },
-  "auxiliary_branches": {
-    "var_names": [
-      "fj_pt"
-    ],
-    "var_infos": {
-      "fj_pt": {
+      "jet_eta_fake": {
         "median": 0,
         "norm_factor": 1,
         "replace_inf_value": 0,
