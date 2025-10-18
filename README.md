@@ -1,6 +1,6 @@
 # NanoTuples
 
-Custom NanoAOD ntuple producers with additional boosted jet taggers and their PF candidates.
+Custom NanoAOD ntuple producers with additional boosted jet taggers.
 
 This branch provides a recipe for integrating a self-trained tagger into the MiniAODv6-NanoAODv15 workflow.
 
@@ -84,6 +84,15 @@ Data (Summer24, MiniAODv6):
 ```bash
 cmsDriver.py --python_filename test_nanoTuples_data2024.py --eventcontent NANOAOD --customise PhysicsTools/NanoTuples/nanoTuples_cff.nanoTuples_customizeData --datatier NANOAOD --fileout file:nano_data2024.root --conditions 150X_dataRun3_v2 --step NANO --scenario pp --filein /store/data/Run2024C/JetMET1/MINIAOD/MINIv6NANOv15-v1/2530000/f91e593e-2d71-4e88-91cb-116eb66cb80d.root --era Run3_2024 --data -n 10
 ```
+
+**Note for running from earlier MiniAODs**
+
+This nanoTuples release supports taking earlier MiniAODs (v2 for the Run 2 UL dataset or v4 for the early Run 3 dataset) as inputs and running reMINO-NANO workflows. You only need to add the above `--customise PhysicsTools/NanoTuples/nanoTuples_cff.nanoTuples_customize(MC|data)` on top of the standard cmsDriver configuration. However, note that in this case you need to add two lines after the line `process = nanoAOD_customizeCommon(process)` in the generated configuration.
+```
+process.packedpuppi.useExistingWeights = cms.bool(False)
+process.packedpuppiNoLep.useExistingWeights = cms.bool(False)
+```
+TODO: hope to fix this issue later.
 
 ### Model configuration (optional)
 
