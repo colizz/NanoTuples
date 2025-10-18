@@ -32,6 +32,10 @@ def setupAK15(process, runOnMC=False, path=None, runParticleNet=False, runPartic
     if runOnMC:
         process.ak15GenJetsNoNu.jetPtMin = 100
         process.ak15GenJetsNoNuSoftDrop.jetPtMin = 100
+ 
+    # reset useExistingWeights (nanoAOD_customizeCommon sets it to True)
+    process.puppi.useExistingWeights = cms.bool(False)
+    process.puppiNoLep.useExistingWeights = cms.bool(False)
 
     # from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
     from PhysicsTools.NanoTuples.jetTools import updateJetCollection as updateJetCollectionCustom
