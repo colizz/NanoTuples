@@ -25,6 +25,12 @@ def getCustomTaggerDiscriminatorsAK8(process, name, keep_list):
             'nano_branch_name': 'globalParT3',
         },
 
+        'GlobalParticleTransformerV3-Finetuned-DeepHggV2': {
+            'cff_path': 'PhysicsTools.NanoTuples.newTagger.pfMassDecorrelatedDeepHggV2_cff',
+            'disc_name': '_pfMassDecorrelatedDeepHggV2JetTagsProbs',
+            'nano_branch_name': 'globalParT3_FinetunedDeepHggV2',
+        },
+
         'GlobalParticleTransformerV3-Finetuned-DeepHgg': {  # GloParT-3 fine-tuned for H->gamgam
             'cff_path': 'PhysicsTools.NanoTuples.newTagger.pfMassDecorrelatedDeepHggV3_cff',
             'disc_name': '_pfMassDecorrelatedDeepHggV3JetTagsProbs',

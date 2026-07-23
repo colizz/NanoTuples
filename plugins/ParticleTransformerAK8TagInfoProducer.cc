@@ -11,6 +11,7 @@
 
 #include "DataFormats/PatCandidates/interface/Jet.h"
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
+#include "DataFormats/PatCandidates/interface/Photon.h"
 
 #include "RecoBTag/FeatureTools/interface/TrackInfoBuilder.h"
 #include "RecoBTag/FeatureTools/interface/deep_helpers.h"
@@ -45,6 +46,7 @@ private:
   void endStream() override {}
 
   void fillJetFeatures(DeepBoostedJetFeatures &fts, const reco::Jet &jet);
+  void fillPhotonFeatures(DeepBoostedJetFeatures &fts, const reco::Jet &jet);
   void fillParticleFeatures(DeepBoostedJetFeatures &fts, const reco::Jet &jet);
   void fillSVFeatures(DeepBoostedJetFeatures &fts, const reco::Jet &jet);
 
@@ -54,6 +56,7 @@ private:
   const double min_pt_for_track_properties_;
   const bool use_puppiP4_;
   const bool include_neutrals_;
+  const bool move_electrons_to_neutral_;
   const bool sort_by_sip2dsig_;
   const double min_puppi_wgt_;
   const bool flip_ip_sign_;
@@ -64,6 +67,7 @@ private:
   edm::EDGetTokenT<SVCollection> sv_token_;
   edm::EDGetTokenT<CandidateView> pfcand_token_;
   edm::EDGetTokenT<CandidateView> lt_token_;
+  edm::EDGetTokenT<edm::View<pat::Photon>> photon_token_;
 
   bool use_puppi_value_map_;
   bool use_pvasq_value_map_;
@@ -77,12 +81,14 @@ private:
   edm::Handle<SVCollection> svs_;
   edm::Handle<CandidateView> pfcands_;
   edm::Handle<CandidateView> lts_;
+  edm::Handle<edm::View<pat::Photon>> photons_;
   edm::ESHandle<TransientTrackBuilder> track_builder_;
   edm::Handle<edm::ValueMap<float>> puppi_value_map_;
   edm::Handle<edm::ValueMap<int>> pvasq_value_map_;
   edm::Handle<edm::Association<VertexCollection>> pvas_;
 
   const static std::vector<std::string> jet_features_;
+  const static std::vector<std::string> photon_features_;
   const static std::vector<std::string> charged_particle_features_;
   const static std::vector<std::string> neutral_particle_features_;
   const static std::vector<std::string> sv_features_;
@@ -98,6 +104,12 @@ const std::vector<std::string> ParticleTransformerAK8TagInfoProducer::jet_featur
     "jet_eta_fake",
     "jet_mass_log_fake",
 };
+const std::vector<std::string> ParticleTransformerAK8TagInfoProducer::photon_features_{
+    "photon_chIso", "photon_eOverRawE", "photon_ecalPFClusterIso", "photon_energy", "photon_esEffSigmaRR",
+    "photon_esEnergyOverRawE", "photon_eta", "photon_etaWidth", "photon_hcalPFClusterIso", "photon_hoe",
+    "photon_neuIso", "photon_pfChargedIso", "photon_pfChargedIsoWorstVtx", "photon_phi", "photon_phiWidth",
+    "photon_phoIso", "photon_pt", "photon_r9", "photon_s4", "photon_sigmaIetaIeta",
+    "photon_sigmaIetaIphi", "photon_trkSumPtHollowConeDR03", "photon_trkSumPtSolidConeDR04"};
 const std::vector<std::string> ParticleTransformerAK8TagInfoProducer::charged_particle_features_{
     "cpfcandlt_puppiw",        "cpfcandlt_hcalFrac",       "cpfcandlt_VTX_ass",      "cpfcandlt_lostInnerHits",
     "cpfcandlt_quality",       "cpfcandlt_charge",         "cpfcandlt_isEl",         "cpfcandlt_isMu",
@@ -139,6 +151,7 @@ ParticleTransformerAK8TagInfoProducer::ParticleTransformerAK8TagInfoProducer(con
       min_pt_for_track_properties_(iConfig.getParameter<double>("min_pt_for_track_properties")),
       use_puppiP4_(iConfig.getParameter<bool>("use_puppiP4")),
       include_neutrals_(iConfig.getParameter<bool>("include_neutrals")),
+      move_electrons_to_neutral_(iConfig.getParameter<bool>("move_electrons_to_neutral")),
       sort_by_sip2dsig_(iConfig.getParameter<bool>("sort_by_sip2dsig")),
       min_puppi_wgt_(iConfig.getParameter<double>("min_puppi_wgt")),
       flip_ip_sign_(iConfig.getParameter<bool>("flip_ip_sign")),
@@ -148,6 +161,7 @@ ParticleTransformerAK8TagInfoProducer::ParticleTransformerAK8TagInfoProducer(con
       sv_token_(consumes<SVCollection>(iConfig.getParameter<edm::InputTag>("secondary_vertices"))),
       pfcand_token_(consumes<CandidateView>(iConfig.getParameter<edm::InputTag>("pf_candidates"))),
       lt_token_(consumes<CandidateView>(iConfig.getParameter<edm::InputTag>("lost_tracks"))),
+      photon_token_(consumes<edm::View<pat::Photon>>(iConfig.getParameter<edm::InputTag>("photons"))),
       use_puppi_value_map_(false),
       use_pvasq_value_map_(false),
       track_builder_token_(
@@ -179,6 +193,7 @@ void ParticleTransformerAK8TagInfoProducer::fillDescriptions(edm::ConfigurationD
   desc.add<double>("min_pt_for_track_properties", -1);
   desc.add<bool>("use_puppiP4", true);
   desc.add<bool>("include_neutrals", true);
+  desc.add<bool>("move_electrons_to_neutral", false);
   desc.add<bool>("sort_by_sip2dsig", false);
   desc.add<double>("min_puppi_wgt", 0.01);
   desc.add<bool>("flip_ip_sign", false);
@@ -187,6 +202,7 @@ void ParticleTransformerAK8TagInfoProducer::fillDescriptions(edm::ConfigurationD
   desc.add<edm::InputTag>("secondary_vertices", edm::InputTag("inclusiveCandidateSecondaryVertices"));
   desc.add<edm::InputTag>("pf_candidates", edm::InputTag("particleFlow"));
   desc.add<edm::InputTag>("lost_tracks", edm::InputTag("lostTracks"));
+  desc.add<edm::InputTag>("photons", edm::InputTag("slimmedPhotons"));
   desc.add<edm::InputTag>("jets", edm::InputTag("ak8PFJetsPuppi"));
   desc.add<edm::InputTag>("puppi_value_map", edm::InputTag("puppi"));
   desc.add<edm::InputTag>("vertex_associator", edm::InputTag("primaryVertexAssociation", "original"));
@@ -210,6 +226,7 @@ void ParticleTransformerAK8TagInfoProducer::produce(edm::Event &iEvent, const ed
   iEvent.getByToken(sv_token_, svs_);
   iEvent.getByToken(pfcand_token_, pfcands_);
   iEvent.getByToken(lt_token_, lts_);
+  iEvent.getByToken(photon_token_, photons_);
 
   track_builder_ = iSetup.getHandle(track_builder_token_);
 
@@ -232,6 +249,16 @@ void ParticleTransformerAK8TagInfoProducer::produce(edm::Event &iEvent, const ed
     for (const auto &name : jet_features_) {
       features.add(name);
     }
+    const auto isLogPhotonFeature = [](const std::string &name) {
+      return name == "photon_chIso" || name == "photon_ecalPFClusterIso" || name == "photon_energy" ||
+             name == "photon_hcalPFClusterIso" || name == "photon_neuIso" || name == "photon_pfChargedIso" ||
+             name == "photon_pfChargedIsoWorstVtx" || name == "photon_phoIso" || name == "photon_pt" ||
+             name == "photon_trkSumPtHollowConeDR03" || name == "photon_trkSumPtSolidConeDR04";
+    };
+    for (const auto &name : photon_features_) {
+      features.add(name + "_lead" + (isLogPhotonFeature(name) ? "_log" : ""));
+      features.add(name + "_sublead" + (isLogPhotonFeature(name) ? "_log" : ""));
+    }
     for (const auto &name : charged_particle_features_) {
       features.add(name);
     }
@@ -252,12 +279,14 @@ void ParticleTransformerAK8TagInfoProducer::produce(edm::Event &iEvent, const ed
 
     if (fill_vars) {
       fillJetFeatures(features, jet);
+      fillPhotonFeatures(features, jet);
       fillParticleFeatures(features, jet);
       fillSVFeatures(features, jet);
 
       features.check_consistency(charged_particle_features_);
       features.check_consistency(neutral_particle_features_);
       features.check_consistency(sv_features_);
+
     }
 
     // this should always be done even if features are not filled
@@ -279,6 +308,85 @@ void ParticleTransformerAK8TagInfoProducer::fillJetFeatures(DeepBoostedJetFeatur
   fts.fill("jet_pt_log_fake", 1.0f);
   fts.fill("jet_eta_fake", 1.0f);
   fts.fill("jet_mass_log_fake", 1.0f);
+}
+
+void ParticleTransformerAK8TagInfoProducer::fillPhotonFeatures(DeepBoostedJetFeatures &fts, const reco::Jet &jet) {
+  std::vector<const pat::Photon *> jetPhotons;
+  for (const auto &photon : *photons_) {
+    if (reco::deltaR2(photon, jet) < jet_radius_ * jet_radius_)
+      jetPhotons.push_back(&photon);
+  }
+  std::sort(jetPhotons.begin(), jetPhotons.end(), [](const auto *a, const auto *b) { return a->pt() > b->pt(); });
+
+  auto fill = [&](const std::string &rank, const pat::Photon *photon) {
+    // Build the untransformed photon variables first. Missing photons are padded
+    // with -999, exactly as in the training preprocessing.
+    float chIso = -999.f, eOverRawE = -999.f, ecalPFClusterIso = -999.f, energy = -999.f;
+    float esEffSigmaRR = -999.f, esEnergyOverRawE = -999.f, eta = -999.f, etaWidth = -999.f;
+    float hcalPFClusterIso = -999.f, hoe = -999.f, neuIso = -999.f, pfChargedIso = -999.f;
+    float pfChargedIsoWorstVtx = -999.f, phi = -999.f, phiWidth = -999.f, phoIso = -999.f;
+    float pt = -999.f, r9 = -999.f, s4 = -999.f, sigmaIetaIeta = -999.f, sigmaIetaIphi = -999.f;
+    float trkSumPtHollowConeDR03 = -999.f, trkSumPtSolidConeDR04 = -999.f;
+
+    if (photon) {
+      const auto *sc = photon->superCluster().isNonnull() ? photon->superCluster().get() : nullptr;
+      const auto &ss = photon->full5x5_showerShapeVariables();
+      const float rawEnergy = sc ? sc->rawEnergy() : 0.f;
+      chIso = photon->chargedHadronIso();
+      eOverRawE = rawEnergy > 0.f ? photon->energy() / rawEnergy : -1.f;
+      ecalPFClusterIso = photon->ecalPFClusterIso();
+      energy = photon->energy();
+      esEffSigmaRR = photon->showerShapeVariables().effSigmaRR;
+      esEnergyOverRawE = sc && rawEnergy > 0.f ? sc->preshowerEnergy() / rawEnergy : -1.f;
+      eta = photon->eta();
+      etaWidth = sc ? sc->etaWidth() : 0.f;
+      hcalPFClusterIso = photon->hcalPFClusterIso();
+      hoe = photon->hadTowOverEm();
+      neuIso = photon->neutralHadronIso();
+      pfChargedIso = photon->chargedHadronIso();
+      pfChargedIsoWorstVtx = photon->chargedHadronWorstVtxIso();
+      phi = photon->phi();
+      phiWidth = sc ? sc->phiWidth() : 0.f;
+      phoIso = photon->photonIso();
+      pt = photon->pt();
+      r9 = photon->r9();
+      s4 = ss.e5x5 != 0.f ? ss.e2x2 / ss.e5x5 : 0.f;
+      sigmaIetaIeta = photon->full5x5_sigmaIetaIeta();
+      sigmaIetaIphi = ss.sigmaIetaIphi;
+      trkSumPtHollowConeDR03 = photon->trkSumPtHollowConeDR03();
+      trkSumPtSolidConeDR04 = photon->trkSumPtSolidConeDR04();
+    }
+
+    // Match the training pipeline: log for kinematics, log1p for isolation.
+    const auto logKinematic = [](float value) { return std::log(std::max(value, 1.e-6f)); };
+    const auto logIsolation = [](float value) { return std::log1p(std::max(value, 0.f)); };
+    fts.fill("photon_chIso_" + rank + "_log", logIsolation(chIso));
+    fts.fill("photon_eOverRawE_" + rank, eOverRawE);
+    fts.fill("photon_ecalPFClusterIso_" + rank + "_log", logIsolation(ecalPFClusterIso));
+    fts.fill("photon_energy_" + rank + "_log", logKinematic(energy));
+    fts.fill("photon_esEffSigmaRR_" + rank, esEffSigmaRR);
+    fts.fill("photon_esEnergyOverRawE_" + rank, esEnergyOverRawE);
+    fts.fill("photon_eta_" + rank, eta);
+    fts.fill("photon_etaWidth_" + rank, etaWidth);
+    fts.fill("photon_hcalPFClusterIso_" + rank + "_log", logIsolation(hcalPFClusterIso));
+    fts.fill("photon_hoe_" + rank, hoe);
+    fts.fill("photon_neuIso_" + rank + "_log", logIsolation(neuIso));
+    fts.fill("photon_pfChargedIso_" + rank + "_log", logIsolation(pfChargedIso));
+    fts.fill("photon_pfChargedIsoWorstVtx_" + rank + "_log", logIsolation(pfChargedIsoWorstVtx));
+    fts.fill("photon_phi_" + rank, phi);
+    fts.fill("photon_phiWidth_" + rank, phiWidth);
+    fts.fill("photon_phoIso_" + rank + "_log", logIsolation(phoIso));
+    fts.fill("photon_pt_" + rank + "_log", logKinematic(pt));
+    fts.fill("photon_r9_" + rank, r9);
+    fts.fill("photon_s4_" + rank, s4);
+    fts.fill("photon_sigmaIetaIeta_" + rank, sigmaIetaIeta);
+    fts.fill("photon_sigmaIetaIphi_" + rank, sigmaIetaIphi);
+    fts.fill("photon_trkSumPtHollowConeDR03_" + rank + "_log", logIsolation(trkSumPtHollowConeDR03));
+    fts.fill("photon_trkSumPtSolidConeDR04_" + rank + "_log", logIsolation(trkSumPtSolidConeDR04));
+  };
+
+  fill("lead", jetPhotons.empty() ? nullptr : jetPhotons[0]);
+  fill("sublead", jetPhotons.size() < 2 ? nullptr : jetPhotons[1]);
 }
 
 void ParticleTransformerAK8TagInfoProducer::fillParticleFeatures(DeepBoostedJetFeatures &fts, const reco::Jet &jet) {
@@ -322,6 +430,7 @@ void ParticleTransformerAK8TagInfoProducer::fillParticleFeatures(DeepBoostedJetF
 
   std::vector<reco::CandidatePtr> cpfPtrs, npfPtrs;
   std::map<reco::CandidatePtr, bool> isLostTrackMap;
+  std::map<reco::CandidatePtr, bool> movedElectronMap;
 
   for (const auto &dau : jet.daughterPtrVector()) {
     // remove particles w/ extremely low puppi weights
@@ -340,9 +449,16 @@ void ParticleTransformerAK8TagInfoProducer::fillParticleFeatures(DeepBoostedJetF
         continue;
     }
     if (cand->charge() != 0) {
-      cpfPtrs.push_back(cand);
-      isLostTrackMap[cand] = false;
-    }else {
+      if (move_electrons_to_neutral_ && std::abs(cand->pdgId()) == 11) {
+        // DeepHggV2 was trained with electrons in the neutral collection,
+        // represented as photon-like candidates.
+        npfPtrs.push_back(cand);
+        movedElectronMap[cand] = true;
+      } else {
+        cpfPtrs.push_back(cand);
+        isLostTrackMap[cand] = false;
+      }
+    } else {
       npfPtrs.push_back(cand);
     }
   }
@@ -599,14 +715,20 @@ void ParticleTransformerAK8TagInfoProducer::fillParticleFeatures(DeepBoostedJetF
 
       fts.fill("npfcand_hcalFrac", hcal_fraction);
 
-      fts.fill("npfcand_isGamma", std::abs(packed_cand->pdgId()) == 22);
+      bool isGamma = std::abs(packed_cand->pdgId()) == 22;
+      if (movedElectronMap.count(cand) && movedElectronMap.at(cand))
+        isGamma = true;
+      fts.fill("npfcand_isGamma", isGamma);
       fts.fill("npfcand_isNeutralHad", std::abs(packed_cand->pdgId()) == 130);
 
     } else if (reco_cand) {
 
       fts.fill("npfcand_hcalFrac", reco_cand->hcalEnergy() / (reco_cand->ecalEnergy() + reco_cand->hcalEnergy()));
 
-      fts.fill("npfcand_isGamma", std::abs(reco_cand->pdgId()) == 22);
+      bool isGamma = std::abs(reco_cand->pdgId()) == 22;
+      if (movedElectronMap.count(cand) && movedElectronMap.at(cand))
+        isGamma = true;
+      fts.fill("npfcand_isGamma", isGamma);
       fts.fill("npfcand_isNeutralHad", std::abs(reco_cand->pdgId()) == 130);
     }
 

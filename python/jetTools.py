@@ -846,7 +846,7 @@ def setupBTagging(process, jetSource, pfCandidates, explicitJTA, pvSource, svSou
                                     process, task)
 
             ##!!! custom DeepHWW and DeepHgg
-            if btagInfo in ['pfMassDecorrelatedDeepHWWV1TagInfos', 'pfMassDecorrelatedDeepHggV3TagInfos', 'pfMassDecorrelatedInclParticleTransformerV1TagInfos', 'pfMassDecorrelatedInclParticleTransformerV2TagInfos', 'pfMassDecorrelatedInclParticleTransformerAK15V2TagInfos']:
+            if btagInfo in ['pfMassDecorrelatedDeepHWWV1TagInfos', 'pfMassDecorrelatedDeepHggV3TagInfos', 'pfMassDecorrelatedDeepHggV2TagInfos', 'pfMassDecorrelatedInclParticleTransformerV1TagInfos', 'pfMassDecorrelatedInclParticleTransformerV2TagInfos', 'pfMassDecorrelatedInclParticleTransformerAK15V2TagInfos']:
                 if pfCandidates.value() == 'packedPFCandidates':
                     # case 1: running over jets whose daughters are PackedCandidates (only via updateJetCollection for now)
                     vertex_associator = ""
